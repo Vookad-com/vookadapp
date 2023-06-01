@@ -1,7 +1,10 @@
+import 'package:eatit/screens/home.dart';
 import 'package:eatit/screens/screen.dart';
 import 'package:eatit/screens/splash.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+
+import 'screens/initialhome.dart';
 
 class AppRouter {
   GoRouter router = GoRouter(routes: [
@@ -28,7 +31,7 @@ class AppRouter {
     GoRoute(
         path: '/home',
         pageBuilder: (context, state) {
-          return const MaterialPage(child: Home());
+          return MaterialPage(child: Home());
         }),
   ]);
 }

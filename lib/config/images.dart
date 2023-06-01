@@ -12,4 +12,7 @@ class AppImages {
   static const vookadLogo = _Image('vookadlogo.png');
   static const avatar = _Image('avatar.png');
   static const biryani = _Image('biryani1.png');
+  static const pasta = _Image('pasta.jpg');
+  static const chicken = _Image('chicken.jpg');
+  static const untitled = _Image('Untitled.jpg');
 }
