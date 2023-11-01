@@ -13,7 +13,8 @@ final authLink = AuthLink(
 final client = GraphQLClient(
   cache: GraphQLCache(),
   link: authLink.concat(HttpLink(
-    'http://192.168.0.105:3000/graphql',
-    // 'https://api-vookad.onrender.com',
+    // 'https://api.vookad.com/graphql',
+    'http://192.168.0.104:5000/graphql'
+    // 'http://api.vookad.veganzo.earth/graphql',
   )),
 );

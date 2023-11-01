@@ -1,16 +1,52 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hexcolor/hexcolor.dart';
+import '../config/colors.dart';
+import '../models/product.dart';
 
-class Foods extends StatefulWidget {
-  const Foods({super.key});
+import 'package:hive/hive.dart';
 
-  @override
-  State<Foods> createState() => _FoodsState();
+class Foods extends StatelessWidget {
+  final List<Map<String, dynamic>> dataList;
+  const Foods({super.key, required this.dataList});
+
+  Future<void> updateProductInHive(BuildContext context,String pdtId, String categoryId, double price) async {
+  final box = await Hive.openBox('products'); // Open a Hive box named 'products'.
+  final items = await Hive.openBox('cart');
+  final inst = items.get('total');
+  int current = price.toInt();
+  print(current);
+  if(inst!=null){
+    int total = inst;
+    total+=current;
+    await items.put('total', total);
+  } else{
+    await items.put('total', current);
+  }
+
+  // Check if a product with the given pdtId and categoryId exists in the box.
+  final existingProduct = box.values.firstWhere(
+    (product, ) => product.pdtId == pdtId && product.categoryId == categoryId,
+    orElse: () => null,
+  );
+
+  if (existingProduct != null) {
+    // If the product exists, increment its quantity.
+    existingProduct.quantity += 1;
+    await existingProduct.save(); // Save the updated product.
+  } else {
+    // If the product doesn't exist, create a new entry in the box.
+    final newProduct = Product(pdtId: pdtId, categoryId: categoryId);
+    await box.add(newProduct); // Add the new product to the box.
+  }
+
+
+  context.pop();
 }
 
-class _FoodsState extends State<Foods> {
-
-  List<Map<String, dynamic>> types = [
+  @override
+  Widget build(BuildContext context) {
+    List<Map<String, dynamic>> types = [
     {
       'title':'All',
       'active': false,
@@ -45,8 +81,6 @@ class _FoodsState extends State<Foods> {
     },
   ];
 
-  @override
-  Widget build(BuildContext context) {
     return Column(
       children: [
         SizedBox(
@@ -85,7 +119,7 @@ class _FoodsState extends State<Foods> {
             ),
             Column(
               // height: 150,
-              children: meals.map((e){
+              children: dataList.map((e){
                        return Container(
                            height: 120,
                            margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
@@ -103,7 +137,7 @@ class _FoodsState extends State<Foods> {
                                    child: ClipRRect(
                                      borderRadius: BorderRadius.circular(8.0),
                                      child: Image(
-                                             image:NetworkImage(e['img']),
+                                             image:NetworkImage(e["gallery"][0]["url"]),
                                              fit: BoxFit.cover,
                                            ),
                                    ),
@@ -121,7 +155,7 @@ class _FoodsState extends State<Foods> {
                                                       fontWeight: FontWeight.bold,
                                                       fontSize: 16,
                                                     ),),
-                                         Text(e['descrip'],style: const TextStyle(
+                                         Text(e['description'],style: const TextStyle(
                                                       fontWeight: FontWeight.bold,
                                                       color: Color(0xFF666666),
                                                       fontSize: 9,
@@ -129,11 +163,12 @@ class _FoodsState extends State<Foods> {
                                          Row(
                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                            children: <Widget>[
-                                             Text("₹ ${e['pricing']}",style: const TextStyle(
+                                             Text("₹ ${e["category"][0]['price']}",style: const TextStyle(
                                                       fontWeight: FontWeight.bold,
                                                       color: Color(0xFFFF8023),
                                                       fontSize: 16,
                                                     ),),
+                                             Text(e["category"][0]['name']),
                                              Container(
                                                decoration: BoxDecoration(
                                                   color: const Color(0xFFFF8023), // Set your desired background color here
@@ -141,9 +176,9 @@ class _FoodsState extends State<Foods> {
                                                 ),
                                                width: 75,
                                                height: 20,
-                                               child: const InkWell(
-                                                // onTap: onPressed,
-                                                  child: Center(
+                                               child: InkWell(
+                                                onTap: () => _displayBottomSheet(context, e["category"], e["_id"]),
+                                                  child: const Center(
                                                     child: Text(
                                                       "Add to cart",
                                                       style: TextStyle(
@@ -169,4 +204,58 @@ class _FoodsState extends State<Foods> {
       ],
     );
   }
+  Future _displayBottomSheet(BuildContext context, List<Object?> data, String pdtId) {
+    return showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(10))),
+        builder: (context) => Container(
+                                // color: AppColors.bgSecondary,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                margin: const EdgeInsets.all(10),
+                                child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                    child: ListView(
+                                    children: [
+                                      const Text("Size", style: TextStyle(fontSize: 16, color: AppColors.bgPrimary,fontWeight: FontWeight.w600),),
+                                      ...data.map((e) => Container(
+                                        margin: const EdgeInsets.symmetric(vertical: 10),
+                                        child: Row(
+                                          children: [
+                                            Expanded(flex: 2,child: Text("${e is Map<String, dynamic> ? e['name'] : ''}")),
+                                            Expanded(flex:1,child: Text("₹ ${e is Map<String, dynamic> ? e['price'] : ''}")),
+                                            Expanded(
+                                                flex: 1,
+                                                child: Container(
+                                               decoration: BoxDecoration(
+                                                  color: const Color(0xFFFF8023), // Set your desired background color here
+                                                  borderRadius: BorderRadius.circular(100.0), // Optional: Add rounded corners
+                                                ),
+                                               width: 75,
+                                               height: 20,
+                                               child: InkWell(
+                                                onTap: () => updateProductInHive(context, pdtId,e is Map<String, dynamic> ? e['_id'] : '', e is Map<String, dynamic> ? e['price'] is int? e['price'].toDouble():e['price']  : 0),
+                                                  child: const Center(
+                                                    child: Text(
+                                                      "Add",
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 10,
+                                                        fontWeight: FontWeight.bold,
+                                                      ),
+                                                    ),
+                                                  ),
+                                               ),
+                                             ))
+                                          ],
+                                        ),
+                                      ))
+                                    ]
+                                )
+                              )
+                            ));
+  }
 }
+

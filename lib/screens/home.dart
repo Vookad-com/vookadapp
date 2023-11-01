@@ -1,6 +1,10 @@
+import 'package:Vookad/config/colors.dart';
+import 'package:Vookad/graphql/graphql.dart';
+import 'package:Vookad/graphql/userquery.dart';
 import 'package:flutter/material.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 
 // components
 import '../components/header.dart';
@@ -22,6 +26,19 @@ class _HomeState extends State<Home> {
   ];
   final CarouselController carouselController = CarouselController();
   int currentIndex = 0;
+
+  Future fetchData() async {
+  var query = QueryOptions(document: gql(home), variables: const {"family": "menu","bannerId": "656466326565303339333533"});
+  final QueryResult result = await client.query(query);
+
+  if (result.hasException) {
+    print('Error: ${result.exception.toString()}');
+    throw Exception("This is an error message.");
+  } else {
+    final Map<String, dynamic>? data = result.data;
+    return data;
+  }
+}
 
   List<Map<String, dynamic>> week = [
   {
@@ -64,7 +81,13 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
+      body: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        child: FutureBuilder(
+        future: fetchData(),
+        builder: (context, snapshot){
+          if(snapshot.hasData){
+            return SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: <Widget>[
@@ -80,18 +103,18 @@ class _HomeState extends State<Home> {
                   });
                 },
               ),
-              items: feed
+              items: (snapshot.data["banner"]["gallery"] as List<dynamic>)
                 .map((item) => Padding(
                       padding: const EdgeInsets.all(2.0),
                       child: Image(
-                        image: NetworkImage(item),
+                        image: NetworkImage(item["url"]),
                       ),
                     ))
                 .toList()
               ),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: feed.asMap().entries.map((entry) {
+              children:  (snapshot.data["banner"]["gallery"] as List<dynamic>).asMap().entries.map((entry) {
                 return GestureDetector(
                   onTap: () => carouselController.animateToPage(entry.key),
                   child: Container(
@@ -158,11 +181,36 @@ class _HomeState extends State<Home> {
               ),
             ),
             const SizedBox(height: 15),
-            const Foods(),
+            Foods(dataList: (snapshot.data["inventoryItems"] as List)
+            .map((item) => item as Map<String, dynamic>)
+            .toList(),),
+            const SizedBox(height: 30),
             ],
           )
         )
-      )
+      );
+          } else if(snapshot.hasError){
+            return SafeArea(child: SingleChildScrollView(
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.height,
+                child: const Center(
+                  child: Text("Network Problem \n Try reloading"),
+            ),),
+              ));
+          }
+          else {
+            return const Center(
+              child: Text("Loading"),
+            );
+          }
+        },
+      ),
+      ),
     );
+  }
+  Future<void> _handleRefresh() async {
+    final refreshed = await fetchData();
+    setState(() {
+    });
   }
 }

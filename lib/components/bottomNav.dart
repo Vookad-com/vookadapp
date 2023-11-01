@@ -1,23 +1,59 @@
+import 'package:Vookad/config/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
 
-class BottomNav extends StatelessWidget {
-  // const BottomNav({super.key});
+class BottomNav extends StatefulWidget {
+
+  final StatefulNavigationShell navigationShell;
   const BottomNav({
     required this.navigationShell,
     Key? key,
   }) : super(key: key ?? const ValueKey<String>('BottomNav'));
-  final StatefulNavigationShell navigationShell;
 
+  @override
+  State<BottomNav> createState() => _BottomNavState();
+}
+
+class _BottomNavState extends State<BottomNav> {
+
+  bool notEmpty=false;
+  int total = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    checker();// Initialize your Future or perform one-time setup here
+    getCartDetails();
+  }
+
+  void checker() async {
+     final pdtBox = await Hive.openBox('products');
+    final cartlistner = pdtBox.watch();
+    cartlistner.listen((event) {
+         getCartDetails();
+    });
+  }
+
+  void getCartDetails() async {
+    final box = await Hive.openBox('cart');
+    int stotal = box.get('total');
+    final pdtBox = await Hive.openBox('products');
+    setState(() {
+      notEmpty = pdtBox.length>0? true: false;
+      total = stotal;
+    });
+  }
 
 
   @override
   Widget build(BuildContext context) {
+    final navigationShell = widget.navigationShell;
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: Container(
-        height: 60,
+        height: notEmpty?110:60,
         decoration: const BoxDecoration(
           border: Border(
             top: BorderSide(
@@ -26,7 +62,51 @@ class BottomNav extends StatelessWidget {
             ),
           ),
         ),
-        child: Row(
+        child: Column(
+          children: [
+            notEmpty?Container(
+                margin: const EdgeInsets.symmetric(horizontal: 5.0, vertical: 10.0),
+                decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10), // Set the border radius
+                            ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    Expanded(
+                        flex:3,
+                        child: Padding(padding: const EdgeInsets.symmetric(horizontal: 10.0), child: Text("Total : ₹ $total", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),))
+                    ),
+                    Expanded(
+                        flex: 2,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 6.0),
+                          decoration: BoxDecoration(
+                            color: AppColors.bgPrimary,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(5.0),
+                            child: InkWell(
+                              onTap: ()=> context.push('/cart'),
+                            child: const Center(child: Text("View Cart", style: TextStyle(color: AppColors.white),),),
+                          ),
+                          ),
+                        )),
+                    Expanded(
+                        flex: 1,
+                        child: InkWell(
+                          onTap: (){
+                            Hive.box('products').clear();
+                            Hive.box('cart').clear();
+                          },
+                          child: const Icon(Icons.close, size: 20, ),
+                        ),
+                      )
+                  ],
+                ),
+
+              ):const SizedBox(),
+            Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Expanded(
@@ -79,7 +159,7 @@ class BottomNav extends StatelessWidget {
                 )
             ), Expanded(
                 child: GestureDetector(
-                  onTap: ()=> context.push('/login'),
+                  onTap: ()=> context.push('/cart'),
                   child: Column(
                   children: <Widget>[
                     Container(
@@ -127,6 +207,8 @@ class BottomNav extends StatelessWidget {
                 )
             )
           ],
+        )
+          ],
         ),
       ),
     );
@@ -135,16 +217,17 @@ class BottomNav extends StatelessWidget {
     // When navigating to a new branch, it's recommended to use the goBranch
     // method, as doing so makes sure the last navigation state of the
     // Navigator for the branch is restored.
-    navigationShell.goBranch(
+    widget.navigationShell.goBranch(
       index,
       // A common pattern when using bottom navigation bars is to support
       // navigating to the initial location when tapping the item that is
       // already active. This example demonstrates how to support this behavior,
       // using the initialLocation parameter of goBranch.
-      initialLocation: index == navigationShell.currentIndex,
+      initialLocation: index == widget.navigationShell.currentIndex,
     );
   }
 }
+
 
 // class _BottomNavState extends State<BottomNav> {
 //

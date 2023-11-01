@@ -1,3 +1,4 @@
+import 'package:Vookad/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
@@ -30,6 +31,9 @@ class _MyAppState extends State<MyApp> {
   void hiveInit() async {
     final appDir = await getApplicationDocumentsDirectory();
     Hive.init(appDir.path);
+    if (!Hive.isAdapterRegistered(ProductAdapter().typeId)) {
+      Hive.registerAdapter(ProductAdapter());
+    }
   }
 
   @override

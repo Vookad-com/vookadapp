@@ -1,3 +1,4 @@
+import 'package:Vookad/screens/checkout/cart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
@@ -17,6 +18,7 @@ import 'screens/Coming.dart';
 import 'screens/login.dart';
 import 'screens/verify.dart';
 import 'screens/Splash.dart';
+import 'screens/checkout/cart.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -78,7 +80,7 @@ final GoRouter router = GoRouter(
                     // bottom navigation bar.
                     path: '/products',
                     builder: (BuildContext context, GoRouterState state) =>
-                        const Coming(),
+                        const Cart(),
                   ),
                 ],
               ),
@@ -99,6 +101,13 @@ final GoRouter router = GoRouter(
           path: '/profile',
           builder: (BuildContext context, GoRouterState state) {
             return const Profile();
+          },
+          parentNavigatorKey: _rootNavigatorKey
+        ),
+        GoRoute(
+          path: '/cart',
+          builder: (BuildContext context, GoRouterState state) {
+            return const Cart();
           },
           parentNavigatorKey: _rootNavigatorKey
         ),
