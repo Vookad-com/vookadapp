@@ -2,11 +2,26 @@ import 'package:Vookad/models/product.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 import 'router.dart';
 import 'package:path_provider/path_provider.dart';
 
+Future<bool> hiveInit() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    final appDir = await getApplicationDocumentsDirectory();
+    Hive.init(appDir.path);
+    if (!Hive.isAdapterRegistered(ProductAdapter().typeId)) {
+      Hive.registerAdapter(ProductAdapter());
+    }
+    return true;
+  }
+
 void main() async {
+
   runApp(const MyApp());
 }
 
@@ -28,13 +43,8 @@ class _MyAppState extends State<MyApp> {
     hiveInit();
   }
 
-  void hiveInit() async {
-    final appDir = await getApplicationDocumentsDirectory();
-    Hive.init(appDir.path);
-    if (!Hive.isAdapterRegistered(ProductAdapter().typeId)) {
-      Hive.registerAdapter(ProductAdapter());
-    }
-  }
+
+
 
   @override
   Widget build(BuildContext context) {

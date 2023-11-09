@@ -17,15 +17,6 @@ query Verify(\$verify: VerifyInput) {
 }
 """;
 
-const getAddress = """
-query GetAddresses {
-  getAddresses {
-    phone
-    _id
-  }
-}
-""";
-
 const home = """
 query GetItems(\$family: String!, \$bannerId: ID!) {
   inventoryItems(family: \$family) {
@@ -65,5 +56,21 @@ query InventoryItems(\$family: String!) {
       price
       name
   }}
+}
+""";
+
+const getAddress = """
+query getAddress {
+  getUser {
+  addresses {
+    area
+    building
+    landmark
+    label
+    location {
+      coordinates
+    }
+  }  
+  }
 }
 """;

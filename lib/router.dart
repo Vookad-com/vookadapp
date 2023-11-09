@@ -1,3 +1,4 @@
+import 'package:Vookad/screens/address/map.dart';
 import 'package:Vookad/screens/checkout/cart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ import 'screens/Coming.dart';
 import 'screens/login.dart';
 import 'screens/verify.dart';
 import 'screens/Splash.dart';
+import 'screens/address/map.dart';
 import 'screens/checkout/cart.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey =
@@ -118,6 +120,13 @@ final GoRouter router = GoRouter(
                 key: state.pageKey,
                 child: const Address(),
               );
+          },
+          parentNavigatorKey: _rootNavigatorKey
+        ),
+        GoRoute(
+          path: '/address/map',
+          builder: (BuildContext context, GoRouterState state) {
+            return const MapBox();
           },
           parentNavigatorKey: _rootNavigatorKey
         ),
