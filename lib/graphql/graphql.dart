@@ -15,6 +15,5 @@ final client = GraphQLClient(
   link: authLink.concat(HttpLink(
     // 'https://api.vookad.com/graphql',
     'http://192.168.0.106:5000/graphql'
-    // 'http://api.vookad.veganzo.earth/graphql',
   )),
 );
