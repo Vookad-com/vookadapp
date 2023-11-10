@@ -1,4 +1,5 @@
 import 'package:Vookad/models/product.dart';
+import 'package:Vookad/models/searchAddr.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hive/hive.dart';
@@ -16,6 +17,8 @@ Future<bool> hiveInit() async {
     Hive.init(appDir.path);
     if (!Hive.isAdapterRegistered(ProductAdapter().typeId)) {
       Hive.registerAdapter(ProductAdapter());
+    }if (!Hive.isAdapterRegistered(SearchAddrAdapter().typeId)) {
+      Hive.registerAdapter(SearchAddrAdapter());
     }
     return true;
   }

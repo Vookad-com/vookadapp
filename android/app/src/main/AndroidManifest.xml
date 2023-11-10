@@ -9,6 +9,7 @@
         android:label="Vookad"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+         <meta-data android:name="com.mapbox.token" android:value="sk.eyJ1Ijoic2FoaWxjb2RlcjEiLCJhIjoiY2xoMjVhNXoyMWFxMTNkcnpwNmF6Nm5qcSJ9.tkwfbR6Pt5-a628qo9xh1g" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

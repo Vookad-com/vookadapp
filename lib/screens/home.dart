@@ -1,4 +1,3 @@
-import 'package:Vookad/config/colors.dart';
 import 'package:Vookad/graphql/graphql.dart';
 import 'package:Vookad/graphql/userquery.dart';
 import 'package:flutter/material.dart';

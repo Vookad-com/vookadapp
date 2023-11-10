@@ -159,7 +159,7 @@ class _BottomNavState extends State<BottomNav> {
                 )
             ), Expanded(
                 child: GestureDetector(
-                  onTap: ()=> context.push('/address/map'),
+                  onTap: ()=> context.push('/address/map/85.8/20.4'),
                   child: Column(
                   children: <Widget>[
                     Container(

@@ -94,6 +94,7 @@ flutter:
      - assets/Diet.svg
      - assets/Coming.svg
      - assets/pianist.svg
+     - assets/location.png
      - assets/authorize.svg
      - assets/dummy/profile.png
      - assets/dummy/Schedule.png

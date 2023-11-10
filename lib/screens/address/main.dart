@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:Vookad/config/colors.dart';
+import 'package:Vookad/config/location.dart';
 import 'package:Vookad/models/address.dart';
 import 'package:Vookad/models/searchAddr.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
-import 'package:location/location.dart';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../../graphql/graphql.dart';
@@ -31,37 +31,10 @@ class _AddressState extends State<Address> {
     super.dispose();
   }
 
-  Future<List<double>> getLoco() async {
-    Location location = Location();
-
-    bool serviceEnabled;
-    PermissionStatus permissionGranted;
-    LocationData locationData;
-
-    serviceEnabled = await location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await location.requestService();
-      if (!serviceEnabled) {
-        return [20.4, 85.7];
-      }
-    }
-
-    permissionGranted = await location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) {
-        return [20.4, 85.7];
-      }
-    }
-
-    locationData = await location.getLocation();
-    return [locationData.latitude?? 20.4, locationData.longitude?? 85.7];
-      }
-
   void _mapSearch(String searchText) async {
     List<double> loco = await getLoco();
     const String bearerToken = '91613684-c495-4383-a2e4-e028382ccbe2';
-    final response = await http.get(Uri.parse('https://api.mapbox.com/geocoding/v5/mapbox.places/$searchText.json?proximity=${loco[1]},${loco[0]}&access_token=sk.eyJ1Ijoic2FoaWxjb2RlcjEiLCJhIjoiY2xvcW5tZTlxMGxzZTJqcGVjbzk5aTg1dCJ9.8DxH0a8mSl3ptAJvWZGbqA'));
+    final response = await http.get(Uri.parse('https://api.mapbox.com/geocoding/v5/mapbox.places/$searchText.json?proximity=${loco[1]},${loco[0]}&access_token=pk.eyJ1Ijoic2FoaWxjb2RlcjEiLCJhIjoiY2xhejYyOGdvMGlkajN3cnpnZXhvMGN3MSJ9.3kZ0cQL6qD9_JrFW557_0w'));
 
     if (response.statusCode == 200) {
       srhresults.clear();
@@ -73,6 +46,7 @@ class _AddressState extends State<Address> {
           if (item is Map<String, dynamic>) {
             SearchAddr inst = SearchAddr(
               placeName: item["place_name"],
+              place: item["text"],
               lng: item["center"][0],
               lat: item["center"][1]
             );
@@ -184,8 +158,12 @@ class _AddressState extends State<Address> {
                 color: AppColors.white,
                 borderRadius: BorderRadius.circular(12.0),
                 ),
-              child: const InkWell(
-                child: Padding(
+              child: InkWell(
+                onTap: () async {
+                  List<double> loco = await getLoco();
+                  context.push("/address/map/${loco[1]}/${loco[0]}");
+                },
+                child: const Padding(
                   padding: EdgeInsets.all(5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -241,6 +219,9 @@ class _AddressState extends State<Address> {
                             borderRadius: BorderRadius.circular(12.0),
                           ),
                           child: InkWell(
+                            onTap: () {
+                                  context.push("/address/map/${e.lng}/${e.lat}");
+                                },
                             child: Padding(
                               padding: const EdgeInsets.all(5),
                               child: Row(

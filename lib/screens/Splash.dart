@@ -1,3 +1,4 @@
+import 'package:Vookad/models/searchAddr.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
@@ -13,6 +14,7 @@ class SplashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     Timer(const Duration(seconds: 1), () async{
       await Hive.openBox('auth');
+      await Hive.openBox<SearchAddr>('searchAddrBox');
       // ignore: use_build_context_synchronously
       context.go('/home');
     });

@@ -1,30 +1,28 @@
 
-import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:Vookad/components/mapinput.dart';
+import 'package:Vookad/models/searchAddr.dart';
 import 'package:flutter/material.dart';
-// import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
 
 class MapBox extends StatefulWidget {
-  const MapBox({super.key});
+  final double lng;
+  final double lat;
+  const MapBox({super.key,required this.lng,required this.lat});
 
   @override
   State<MapBox> createState() => _MapBoxState();
 }
 
 class _MapBoxState extends State<MapBox> {
-  final accessToken = "pk.eyJ1Ijoic2FoaWxjb2RlcjEiLCJhIjoiY2xhejYyOGdvMGlkajN3cnpnZXhvMGN3MSJ9.3kZ0cQL6qD9_JrFW557_0w";
-
-  // MapViewController controller;
-  //
-  // void _onMapViewCreated(MapViewController controller) {
-  //   this.controller = controller;
-  // }
+  void backtoHome(BuildContext context, SearchAddr address) async {
+    var box = Hive.box<SearchAddr>('searchAddrBox');
+    await box.put('current', address);
+    context.go("/home");
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: MapWidget(
-          resourceOptions: ResourceOptions(accessToken: accessToken),
-      )
-    );
+    return MapInput(lng: widget.lng, lat: widget.lat, backtoHome: backtoHome,);
   }
 }

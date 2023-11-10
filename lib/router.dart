@@ -19,8 +19,6 @@ import 'screens/Coming.dart';
 import 'screens/login.dart';
 import 'screens/verify.dart';
 import 'screens/Splash.dart';
-import 'screens/address/map.dart';
-import 'screens/checkout/cart.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -124,9 +122,11 @@ final GoRouter router = GoRouter(
           parentNavigatorKey: _rootNavigatorKey
         ),
         GoRoute(
-          path: '/address/map',
+          path: '/address/map/:lng/:lat',
           builder: (BuildContext context, GoRouterState state) {
-            return const MapBox();
+            final lng = double.tryParse(state.pathParameters["lng"]!)?? 0.0;
+            final lat = double.tryParse(state.pathParameters["lat"]!)?? 0.0;
+            return MapBox(lng: lng,lat: lat,);
           },
           parentNavigatorKey: _rootNavigatorKey
         ),
