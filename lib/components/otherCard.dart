@@ -1,70 +1,67 @@
-import 'package:Vookad/config/filtertags.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:Vookad/models/filter.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hexcolor/hexcolor.dart';
 import '../config/colors.dart';
+import '../config/filtertags.dart';
+import '../models/filter.dart';
 import '../models/product.dart';
 
 import 'package:hive/hive.dart';
-
-class Foods extends StatefulWidget {
+class OFoods extends StatefulWidget {
   final List<Map<String, dynamic>> dataList;
-  const Foods({super.key, required this.dataList});
+  const OFoods({super.key, required this.dataList});
 
   @override
-  State<Foods> createState() => _FoodsState();
+  State<OFoods> createState() => _OFoodsState();
 }
 
-
-class _FoodsState extends State<Foods>  {
+class _OFoodsState extends State<OFoods> {
   String currentfilter = "All";
   List<Map<String, dynamic>> dataList = [];
   List<Filter> types = [];
   Future<void> updateProductInHive(BuildContext context,String pdtId, String categoryId, double price, String chefId) async {
-    final box = await Hive.openBox('products'); // Open a Hive box named 'products'.
-    final items = await Hive.openBox('cart');
-    final inst = items.get('total');
-    int current = price.toInt();
-    print(current);
-    if(inst!=null){
-      int total = inst;
-      total+=current;
-      await items.put('total', total);
-    } else{
-      await items.put('total', current);
-    }
-
-    // Check if a product with the given pdtId and categoryId exists in the box.
-    final existingProduct = box.values.firstWhere(
-      (product, ) => product.pdtId == pdtId && product.categoryId == categoryId && product.chefId == chefId,
-      orElse: () => null,
-    );
-
-    if (existingProduct != null) {
-      // If the product exists, increment its quantity.
-      existingProduct.quantity += 1;
-      await existingProduct.save(); // Save the updated product.
-    } else {
-      // If the product doesn't exist, create a new entry in the box.
-      final newProduct = Product(pdtId: pdtId, categoryId: categoryId, chefId: chefId);
-      await box.add(newProduct); // Add the new product to the box.
-    }
-
-
+  final box = await Hive.openBox('products'); // Open a Hive box named 'products'.
+  final items = await Hive.openBox('cart');
+  final inst = items.get('total');
+  int current = price.toInt();
+  print(current);
+  if(inst!=null){
+    int total = inst;
+    total+=current;
+    await items.put('total', total);
+  } else{
+    await items.put('total', current);
   }
 
+  // Check if a product with the given pdtId and categoryId exists in the box.
+  final existingProduct = box.values.firstWhere(
+    (product, ) => product.pdtId == pdtId && product.categoryId == categoryId && product.chefId == chefId,
+    orElse: () => null,
+  );
+
+  if (existingProduct != null) {
+    // If the product exists, increment its quantity.
+    existingProduct.quantity += 1;
+    await existingProduct.save(); // Save the updated product.
+  } else {
+    // If the product doesn't exist, create a new entry in the box.
+    final newProduct = Product(pdtId: pdtId, categoryId: categoryId, chefId: chefId);
+    await box.add(newProduct); // Add the new product to the box.
+  }
+
+
+  context.pop();
+}
   @override
   void initState() {
     super.initState();
     types.addAll([Filter("All", true), Filter("Breakfast", false), Filter("Lunch", false), Filter("Snacks", false), Filter("Dinner", false)]);
-    dataList = filtertags(widget.dataList, currentfilter);
+    dataList = filtertagsS(widget.dataList, currentfilter);
   }
-
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
       children: [
         SizedBox(
@@ -85,7 +82,7 @@ class _FoodsState extends State<Foods>  {
                       }
                       setState(() {
                         types = [...types];
-                        dataList = filtertags(widget.dataList, currentfilter);
+                        dataList = filtertagsS(widget.dataList, currentfilter);
                       });
                     },
                     child: Container(
@@ -122,7 +119,7 @@ class _FoodsState extends State<Foods>  {
             Column(
               // height: 150,
               children: dataList.map((e){
-                       Map<String, dynamic> info = e["info"][0];
+                       Map<String, dynamic> info = e;
                        return Container(
                            // height: 120,
                            margin: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
@@ -133,44 +130,26 @@ class _FoodsState extends State<Foods>  {
                            child: Row(
                              children: <Widget>[
                                Expanded(
-                                 flex:2,
-                                 child: SizedBox(
-                                   width: 175,
+                                 flex:1,
+                                 child: InkWell(
+                                   onTap: () => _zoomSheet(context, e,info["category"], info["_id"], "6543ad8f0844d7ab55ef821f"),
+                                   child: SizedBox(
+                                   // height: 120,
                                    child: ClipRRect(
                                      borderRadius: BorderRadius.circular(8.0),
-                                     child: InkWell(
-                                       onTap: () => _zoomSheet(context, e,info["category"], info["_id"], e["ChefId"]),
-                                       child: Column(
-                                       children: [
-                                         Image(
+                                     child: Image(
                                              image:NetworkImage(info["gallery"][0]["url"]),
                                              fit: BoxFit.cover,
                                            ),
-                                         Container(
-                                           color: AppColors.bgPrimary,
-                                           padding: const EdgeInsets.symmetric(horizontal: 0,vertical: 2),
-                                           child: Center(
-                                             child: Text(
-                                               "${(e["distance"]/1000).toStringAsFixed(1)} kms away",
-                                               style: const TextStyle(color: AppColors.white, fontSize: 12,fontWeight: FontWeight.w500)
-                                             ),
-                                           ),
-                                         )
-                                       ],
-                                     ),
-                                     ),
                                    ),
+                                 ),
                                  ),
                                ),
                                Expanded(
-                                   flex: 3,
+                                   flex: 2,
                                    child: Column(
                                      crossAxisAlignment: CrossAxisAlignment.end,
                                      children: [
-                                       Padding(padding: const EdgeInsets.symmetric(horizontal: 10),
-                                       child: Text("By ${e["displayname"]}", style: const TextStyle(color: AppColors.bgPrimary, fontWeight: FontWeight.bold,
-                                                      fontSize: 14,),)
-                                         ,),
                                        Padding(
                                      padding: const EdgeInsets.all(10.0),
                                      child: Column(
@@ -179,12 +158,12 @@ class _FoodsState extends State<Foods>  {
                                        children: <Widget>[
                                          Text(info['name'],style: const TextStyle(
                                                       fontWeight: FontWeight.bold,
-                                                      fontSize: 18,
+                                                      fontSize: 16,
                                                     ),),
                                          Text(info['description'],style: const TextStyle(
                                                       fontWeight: FontWeight.bold,
                                                       color: Color(0xFF666666),
-                                                      fontSize: 10,
+                                                      fontSize: 9,
                                                     ),),
                                          Row(
                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -195,21 +174,21 @@ class _FoodsState extends State<Foods>  {
                                                       fontSize: 16,
                                                     ),),
                                              Text(info["category"][0]['name']),
-                                             InkWell(
-                                                onTap: () => _displayBottomSheet(context, info["category"], info["_id"], e["ChefId"]),
-                                             child: Container(
+                                             Container(
                                                decoration: BoxDecoration(
                                                   color: const Color(0xFFFF8023), // Set your desired background color here
                                                   borderRadius: BorderRadius.circular(100.0), // Optional: Add rounded corners
                                                 ),
-                                               width: 90,
-                                               height: 22,
-                                               child: const Center(
+                                               width: 75,
+                                               height: 20,
+                                               child: InkWell(
+                                                onTap: () => _displayBottomSheet(context, info["category"], info["_id"], "6543ad8f0844d7ab55ef821f"),
+                                                  child: const Center(
                                                     child: Text(
                                                       "Add to cart",
                                                       style: TextStyle(
                                                         color: Colors.white,
-                                                        fontSize: 12,
+                                                        fontSize: 10,
                                                         fontWeight: FontWeight.bold,
                                                       ),
                                                     ),
@@ -256,21 +235,21 @@ class _FoodsState extends State<Foods>  {
                                             Expanded(flex:1,child: Text("₹ ${e is Map<String, dynamic> ? e['price'] : ''}")),
                                             Expanded(
                                                 flex: 1,
-                                                child: InkWell(
-                                                onTap: () => updateProductInHive(context, pdtId,e is Map<String, dynamic> ? e['_id'] : '', e is Map<String, dynamic> ? e['price'] is int? e['price'].toDouble():e['price']  : 0,ChefId),
                                                 child: Container(
                                                decoration: BoxDecoration(
                                                   color: const Color(0xFFFF8023), // Set your desired background color here
                                                   borderRadius: BorderRadius.circular(100.0), // Optional: Add rounded corners
                                                 ),
-                                               width: 90,
-                                               height: 25,
-                                               child: const Center(
+                                               width: 75,
+                                               height: 20,
+                                               child: InkWell(
+                                                onTap: () => updateProductInHive(context, pdtId,e is Map<String, dynamic> ? e['_id'] : '', e is Map<String, dynamic> ? e['price'] is int? e['price'].toDouble():e['price']  : 0,ChefId),
+                                                  child: const Center(
                                                     child: Text(
                                                       "Add",
                                                       style: TextStyle(
                                                         color: Colors.white,
-                                                        fontSize: 12,
+                                                        fontSize: 10,
                                                         fontWeight: FontWeight.bold,
                                                       ),
                                                     ),
@@ -285,8 +264,8 @@ class _FoodsState extends State<Foods>  {
                               )
                             ));
   }
-  Future _zoomSheet(BuildContext context,Map<String, dynamic> e, List<Object?> data, String pdtId, String ChefId) {
-    Map<String, dynamic> info = e["info"][0];
+    Future _zoomSheet(BuildContext context,Map<String, dynamic> e, List<Object?> data, String pdtId, String ChefId) {
+    Map<String, dynamic> info = e;
     return showModalBottomSheet(
         context: context,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(10))),
@@ -324,10 +303,6 @@ class _FoodsState extends State<Foods>  {
                                Column(
                                      crossAxisAlignment: CrossAxisAlignment.end,
                                      children: [
-                                       Padding(padding: const EdgeInsets.symmetric(horizontal: 10),
-                                       child: Text("By ${e["displayname"]}", style: const TextStyle(color: AppColors.bgPrimary, fontWeight: FontWeight.bold,
-                                                      fontSize: 14,),)
-                                         ,),
                                        Padding(
                                      padding: const EdgeInsets.all(10.0),
                                      child: Column(

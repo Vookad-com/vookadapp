@@ -1,9 +1,20 @@
+import 'dart:convert';
+
+import 'package:Vookad/components/dateselector.dart';
+import 'package:Vookad/config/colors.dart';
+import 'package:Vookad/config/location.dart';
 import 'package:Vookad/graphql/graphql.dart';
 import 'package:Vookad/graphql/userquery.dart';
+import 'package:Vookad/models/searchAddr.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hexcolor/hexcolor.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:hive/hive.dart';
+import 'package:http/http.dart' as http;
+import 'package:toast/toast.dart';
+
 
 // components
 import '../components/header.dart';
@@ -17,7 +28,9 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  final box = Hive.box<SearchAddr>('searchAddrBox');
 
+  late Future<SearchAddr> fetchedloco = fetchLoco();
   List<String> feed = [
                   'https://lh3.googleusercontent.com/u/0/d/17eW7kPjFsNt6FXhpDASUDFYEuHbbqlcn=w1909-h918-iv1',
                   'https://lh3.googleusercontent.com/u/0/d/17eW7kPjFsNt6FXhpDASUDFYEuHbbqlcn=w1909-h918-iv1',
@@ -26,8 +39,10 @@ class _HomeState extends State<Home> {
   final CarouselController carouselController = CarouselController();
   int currentIndex = 0;
 
+
   Future fetchData() async {
-  var query = QueryOptions(document: gql(home), variables: const {"family": "menu","bannerId": "656466326565303339333533"});
+  SearchAddr location = await fetchedloco;
+  var query = QueryOptions(document: gql(homequery), variables: {"location": [location.lng, location.lat],"bannerId": "656466326565303339333533"});
   final QueryResult result = await client.query(query);
 
   if (result.hasException) {
@@ -39,46 +54,61 @@ class _HomeState extends State<Home> {
   }
 }
 
-  List<Map<String, dynamic>> week = [
-  {
-    'day': 'Mon',
-    'date': '21',
-    'active':true,
-  },
-  {
-    'day': 'Tue',
-    'date': '22',
-    'active':false,
-  },
-  {
-    'day': 'Wed',
-    'date': '23',
-    'active':false,
-  },
-  {
-    'day': 'Thu',
-    'date': '24',
-    'active':false,
-  },
-  {
-    'day': 'Fri',
-    'date': '25',
-    'active':false,
-  },
-  {
-    'day': 'Sat',
-    'date': '26',
-    'active':false,
-  },
-  {
-    'day': 'Sun',
-    'date': '27',
-    'active':false,
-  },
-];
+  void locowatch(){
+    final locolisten = box.watch();
+    locolisten.listen((event) {
+         setState(() {
+            fetchedloco = fetchLoco();
+         });
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    locowatch();
+  }
+
+  Future<SearchAddr> fetchLoco() async {
+    try {
+
+
+      SearchAddr? addr = box.get('current');
+      if (addr != null) {
+        return addr;
+      }
+    } catch (e) {
+      print('Error accessing Hive box: $e');
+    }
+
+    try {
+      List<double> loco = await getLoco();
+      final response = await http.get(Uri.parse(
+          'https://api.mapbox.com/geocoding/v5/mapbox.places/${loco[1]},${loco[0]}.json?access_token=pk.eyJ1Ijoic2FoaWxjb2RlcjEiLCJhIjoiY2xhejYyOGdvMGlkajN3cnpnZXhvMGN3MSJ9.3kZ0cQL6qD9_JrFW557_0w'));
+      final Map<String, dynamic> data = json.decode(response.body);
+      String place = data["features"][0]["text"] ?? "";
+      String placeName = data["features"][0]["place_name"] ?? "";
+      String pincode = "";
+      final List<dynamic> context = data['features'][0]['context'];
+      for (var item in context) {
+        if (item['id'].contains('postcode')) {
+          pincode =  item['text'];
+          break;
+        }
+      }
+      return SearchAddr(placeName: placeName, place: place, lng: loco[1], lat: loco[0], pincode: pincode);
+    } catch (e) {
+      print('Error fetching location information: $e');
+      // Handle the error or return a default value
+      return SearchAddr(placeName: 'Ghatikia', place: 'OUTR', lng: 85.8429385, lat: 20.2661435, pincode: "751029");
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
+    ToastContext().init(context);
+
     return Scaffold(
       body: RefreshIndicator(
         onRefresh: _handleRefresh,
@@ -86,11 +116,30 @@ class _HomeState extends State<Home> {
         future: fetchData(),
         builder: (context, snapshot){
           if(snapshot.hasData){
+            var data = snapshot.data["nearby"] as List;
+            if(data.isEmpty){
+              return SafeArea(
+                  child:Container(
+                    color: AppColors.white,
+                    child: Stack(
+                children: [
+                  Center(
+                child: SvgPicture.asset(
+                        "assets/noservice.svg",
+                      ),
+              ),
+                  Header(fetchedloco: fetchedloco,),
+                ],
+              ),
+                  )
+              );
+            }
+
             return SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: <Widget>[
-              const Header(),
+              Header(fetchedloco: fetchedloco,),
               CarouselSlider(
               options: CarouselOptions(
                 autoPlay: true,
@@ -132,55 +181,9 @@ class _HomeState extends State<Home> {
               }).toList(),
             ),
             const SizedBox(height: 15),
-            SizedBox(
-              height: 100,
-              child: ListView(
-                scrollDirection: Axis.horizontal, // Horizontal scrolling
-                children: week.map((dayData) {
-                  return Stack(
-                    children: [
-                      Container(
-                        width: 50, // Adjust card width as needed
-                        decoration: BoxDecoration(
-                          color: dayData['active'] ? HexColor('#FECE2F') : HexColor('#FFF2CE'), // Replace with your hex color code
-                          borderRadius: BorderRadius.circular(12.0), // Set the border radius
-                        ),
-                        margin: const EdgeInsets.all(6),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: <Widget>[
-                            Text(
-                              dayData['day'],
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-                            ),
-                            Text(
-                              dayData['date'],
-                              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (dayData['active'])
-                        Positioned(
-                          bottom: -5,
-                          left: 0,
-                          right: 0,
-                          child: Container(
-                            width: 20, // Set the width
-                            height: 20, // Set the height
-                            decoration: const BoxDecoration(
-                              shape: BoxShape.circle, // Makes the container circular
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                    ],
-                  );
-                }).toList(),
-              ),
-            ),
+            const DateSelector(),
             const SizedBox(height: 15),
-            Foods(dataList: (snapshot.data["inventoryItems"] as List)
+            Foods(dataList: (snapshot.data["nearby"] as List)
             .map((item) => item as Map<String, dynamic>)
             .toList(),),
             const SizedBox(height: 30),
@@ -192,8 +195,23 @@ class _HomeState extends State<Home> {
             return SafeArea(child: SingleChildScrollView(
                 child: SizedBox(
                   height: MediaQuery.of(context).size.height,
-                child: const Center(
-                  child: Text("Network Problem \n Try reloading"),
+                child: Center(
+                  child: Stack(
+                    children: [
+                      SvgPicture.asset(
+                        "assets/network.svg",
+                      ),
+                      const Positioned(
+                        // left: 50,
+                        child: SizedBox(
+                          height: 400,
+                          child: Center(
+                            child: Text("No Internet", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
+                          ),
+                        ),
+                      )
+                    ],
+                  ),
             ),),
               ));
           }

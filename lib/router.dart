@@ -1,5 +1,8 @@
 import 'package:Vookad/screens/address/map.dart';
+import 'package:Vookad/screens/address/newadd.dart';
 import 'package:Vookad/screens/checkout/cart.dart';
+import 'package:Vookad/screens/checkout/placed.dart';
+import 'package:Vookad/screens/profile/edit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
@@ -19,6 +22,7 @@ import 'screens/Coming.dart';
 import 'screens/login.dart';
 import 'screens/verify.dart';
 import 'screens/Splash.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -26,6 +30,8 @@ final GlobalKey<NavigatorState> _sectionHomeNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'sectionHomeNav');
 final GlobalKey<NavigatorState> _sectionANavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'sectionANav');
+
+FirebaseAuth auth = FirebaseAuth.instance;
 
 final GoRouter router = GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -51,8 +57,8 @@ final GoRouter router = GoRouter(
                     return const Home();
                       },
                   redirect: (context, state) async {
-                  var auth = Hive.box('auth').get('jwt');
-                  if (auth != null) {
+                  // var auth = Hive.box('auth').get('jwt');
+                  if (auth.currentUser != null) {
                       return '/home';
                     } else {
                       return '/login';
@@ -105,9 +111,24 @@ final GoRouter router = GoRouter(
           parentNavigatorKey: _rootNavigatorKey
         ),
         GoRoute(
+          path: '/profile/edit',
+          builder: (BuildContext context, GoRouterState state) {
+            return const Edit();
+          },
+          parentNavigatorKey: _rootNavigatorKey
+        ),
+        GoRoute(
           path: '/cart',
           builder: (BuildContext context, GoRouterState state) {
             return const Cart();
+          },
+          parentNavigatorKey: _rootNavigatorKey
+        ),
+        GoRoute(
+          path: '/placed/:orderid',
+          builder: (BuildContext context, GoRouterState state) {
+            final orderid = state.pathParameters["orderid"]??"";
+            return Placed(orderid: orderid);
           },
           parentNavigatorKey: _rootNavigatorKey
         ),
@@ -131,6 +152,16 @@ final GoRouter router = GoRouter(
           parentNavigatorKey: _rootNavigatorKey
         ),
         GoRoute(
+          path: '/address/setaddr/:lng/:lat/:id',
+          builder: (BuildContext context, GoRouterState state) {
+            final lng = double.tryParse(state.pathParameters["lng"]!)?? 0.0;
+            final lat = double.tryParse(state.pathParameters["lat"]!)?? 0.0;
+            final id = state.pathParameters["id"] ?? " ";
+            return NewAddr(lng: lng,lat: lat,id: id);
+          },
+          parentNavigatorKey: _rootNavigatorKey
+        ),
+        GoRoute(
           path: '/login',
           builder: (BuildContext context, GoRouterState state) {
             return const Login();
@@ -146,11 +177,13 @@ final GoRouter router = GoRouter(
         ),
         GoRoute(
           name: "verify",
-          path: '/verify/:uid/:phone',
+          path: '/verify/:uid/:phone/:resend',
           builder: (BuildContext context, GoRouterState state) {
             final uid = state.pathParameters["uid"] ?? "";
             final phone = state.pathParameters["phone"] ?? "";
-            return VerifyOtp(uid: uid, phone: phone,);
+            final resendString = state.pathParameters["resend"];
+            final int resend = resendString != null ? int.tryParse(resendString) ?? 0 : 0;
+            return VerifyOtp(uid: uid, phone: phone, resend: resend);
           },
           parentNavigatorKey: _rootNavigatorKey
         ),

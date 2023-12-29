@@ -7,17 +7,19 @@ import 'package:go_router/go_router.dart';
 import 'package:toast/toast.dart';
 import 'package:timer_count_down/timer_count_down.dart';
 import 'package:timer_count_down/timer_controller.dart';
-import 'package:hive/hive.dart';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 import '../toaster.dart';
 import '../graphql/graphql.dart';
 import '../graphql/userquery.dart';
 
+import 'package:firebase_auth/firebase_auth.dart';
+
 class VerifyOtp extends StatefulWidget {
   final String uid;
   final String phone;
-  const VerifyOtp({super.key,required this.uid,required this.phone});
+  final int resend;
+  const VerifyOtp({super.key,required this.uid,required this.phone, required this.resend});
 
   @override
   State<VerifyOtp> createState() => _VerifyOtpState();
@@ -35,8 +37,8 @@ class _VerifyOtpState extends State<VerifyOtp> with CodeAutoFill {
   @override
   void initState() {
     super.initState();
-    listenForCode();
-    getSmsPerm();
+    // listenForCode();
+    // getSmsPerm();
     }
 
   @override
@@ -62,26 +64,50 @@ class _VerifyOtpState extends State<VerifyOtp> with CodeAutoFill {
 
   @override
   Widget build(BuildContext context) {
-    print("reload");
     ToastContext().init(context);
 
-    Future<void> verifyOtp() async {
+    // Future<void> verifyOtp() async {
+    //     setState(() {
+    //         clicked = true;
+    //       });
+    //     try {
+    //       var query = QueryOptions(document: gql(otpCheck), variables: {"verify": {"phone":widget.phone, "otp":otp, "uid": widget.uid}});
+    //       final QueryResult result = await client.query(query).timeout(const Duration(seconds: 30));
+    //       if (result.hasException) {
+    //         throw Exception('Graphql error');
+    //       } else {
+    //         var jwt = result.data?["verifyOtp"]["token"];
+    //         // print(jwt);
+    //         final jwtBox = Hive.box('auth');
+    //         final jwtToken = await jwtBox.put('jwt', jwt);
+    //         // ignore: use_build_context_synchronously
+    //         context.go('/home');
+    //       }
+    //     } catch(e){
+    //       showtoast("Please try again!");
+    //       setState(() {
+    //         clicked = false;
+    //       });
+    //     }
+    //   }
+    Future<void> fireverifyOtp() async {
         setState(() {
             clicked = true;
           });
         try {
-          var query = QueryOptions(document: gql(otpCheck), variables: {"verify": {"phone":widget.phone, "otp":otp, "uid": widget.uid}});
-          final QueryResult result = await client.query(query).timeout(const Duration(seconds: 30));
-          if (result.hasException) {
-            throw Exception('Graphql error');
-          } else {
-            var jwt = result.data?["verifyOtp"]["token"];
-            // print(jwt);
-            final jwtBox = Hive.box('auth');
-            final jwtToken = await jwtBox.put('jwt', jwt);
+            PhoneAuthCredential credential = PhoneAuthProvider.credential(verificationId: widget.uid, smsCode: otp);
+            await FirebaseAuth.instance.signInWithCredential(credential);
+            print("cool");
+            var query = MutationOptions(document: gql(fireUser));
+            final QueryResult result = await client.mutate(query);
+            if (result.hasException) {
+              throw Exception('Graphql error');
+            } else {
+              print(result.data);
+            }
+
             // ignore: use_build_context_synchronously
             context.go('/home');
-          }
         } catch(e){
           showtoast("Please try again!");
           setState(() {
@@ -102,7 +128,7 @@ class _VerifyOtpState extends State<VerifyOtp> with CodeAutoFill {
       const SizedBox(height: 16),
       Pinput(
         length: 6,
-        androidSmsAutofillMethod:  AndroidSmsAutofillMethod.smsUserConsentApi,
+        // androidSmsAutofillMethod:  AndroidSmsAutofillMethod.smsUserConsentApi,
         controller: pinController,
         defaultPinTheme: defaultPinTheme,
         focusedPinTheme: focusedPinTheme,
@@ -118,7 +144,8 @@ class _VerifyOtpState extends State<VerifyOtp> with CodeAutoFill {
       ),
       const SizedBox(height: 24),
       TextButton(
-        onPressed: otp.length == 6 ? verifyOtp : null,
+        // onPressed: otp.length == 6 ? verifyOtp : null,
+        onPressed: otp.length == 6 ? fireverifyOtp : null,
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
           backgroundColor: AppColors.yellow,
@@ -154,7 +181,23 @@ class _VerifyOtpState extends State<VerifyOtp> with CodeAutoFill {
       ),
       const SizedBox(height: 24),
       GestureDetector(
-        onTap: !countdown ? () async {
+        onTap: !countdown ? _fireresendOTP : null,
+        child: Countdown(
+            controller: _controller,
+            seconds: 30,
+            build: (BuildContext context, double time) => Text(countdown?'Didn’t recieve it? Retry in 00:${time.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}':'Resend Now',style: TextStyle(fontSize: 12, color: countdown ? Colors.grey : AppColors.yellow)),
+            interval: const Duration(milliseconds: 1000),
+            onFinished: () {
+              setState(() {
+                countdown = false;
+              });
+            },
+        ),
+    )
+    ]);
+  }
+
+  void _resend () async {
           try {
             var query = QueryOptions(document: gql(checkUser), variables: {"phone": widget.phone});
             final QueryResult result = await client.query(query).timeout(const Duration(seconds: 30));
@@ -171,20 +214,26 @@ class _VerifyOtpState extends State<VerifyOtp> with CodeAutoFill {
           } catch(e){
             showtoast("Otp sent falied");
           }
-        } : null,
-        child: Countdown(
-            controller: _controller,
-            seconds: 30,
-            build: (BuildContext context, double time) => Text(countdown?'Didn’t recieve it? Retry in 00:${time.toStringAsFixed(1).replaceAll(RegExp(r'\.0$'), '')}':'Resend Now',style: TextStyle(fontSize: 12, color: countdown ? Colors.grey : AppColors.yellow)),
-            interval: const Duration(milliseconds: 1000),
-            onFinished: () {
-              setState(() {
-                countdown = false;
-              });
-            },
-        ),
-    )
-    ]);
+        }
+
+  Future<void> _fireresendOTP() async {
+    setState(() {
+      countdown = true;
+    });
+    _controller.restart();
+    if (widget.uid == "" || widget.resend == 0) {
+      // Handle missing tokens
+      return;
+    }
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: widget.phone, // Phone number used initially
+      verificationCompleted: (PhoneAuthCredential credential) {},
+      verificationFailed: (FirebaseAuthException e) {},
+      codeSent: (String verificationId, int? resendToken) {},
+      codeAutoRetrievalTimeout: (String verificationId) { },
+      forceResendingToken: widget.resend, // Provide stored resend token
+    );
+    showtoast("Otp sent");
   }
 }
 

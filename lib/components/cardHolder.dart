@@ -4,7 +4,7 @@ import '../config/colors.dart';
 class CartHolder extends StatefulWidget {
   final String pdttype;
   final List<Map<String,dynamic>> pdts;
-  final Function(String, String, bool, double) cartHandler;
+  final Function(String, String, String, bool, double) cartHandler;
   const CartHolder({super.key,required this.pdttype, required this.pdts, required this.cartHandler});
 
   @override
@@ -44,7 +44,7 @@ class _CartHolderState extends State<CartHolder> {
                     Expanded(flex: 3,child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(e['name'], style: const TextStyle(fontSize: 16, color: AppColors.black,fontWeight: FontWeight.w600),),
+                        Text(e['info']['name'], style: const TextStyle(fontSize: 16, color: AppColors.black,fontWeight: FontWeight.w600),),
                         Text("₹ ${cat.price}", style: const TextStyle(fontSize: 16, color: Colors.grey,fontWeight: FontWeight.w600),),
                       ],
                     )),
@@ -59,7 +59,7 @@ class _CartHolderState extends State<CartHolder> {
                               borderRadius: BorderRadius.circular(1000.0), // Set the border radius
                             ),
                           child: InkWell(
-                            onTap: (){widget.cartHandler(e['_id'],cat.categoryId,false, cat.price);},
+                            onTap: (){widget.cartHandler(e['info']['_id'],cat.categoryId, e['chefId'],false, cat.price);},
                             child: const Padding(padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),child: Text("-"),),
                           ),
                         ),
@@ -75,7 +75,7 @@ class _CartHolderState extends State<CartHolder> {
                               borderRadius: BorderRadius.circular(1000.0), // Set the border radius
                             ),
                           child: InkWell(
-                            onTap: (){widget.cartHandler(e['_id'],cat.categoryId,true, cat.price);},
+                            onTap: (){widget.cartHandler(e['info']['_id'],cat.categoryId, e['chefId'],true, cat.price);},
                             child: const Padding(padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),child: Text("+"),),
                           ),
                         ),

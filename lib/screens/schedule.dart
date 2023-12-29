@@ -5,6 +5,8 @@ import '../components/foodCards.dart';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 
+import '../components/otherCard.dart';
+
 class Schedule extends StatefulWidget {
   const Schedule({super.key});
 
@@ -43,12 +45,11 @@ Future fetchData() async {
                      borderRadius: BorderRadius.circular(8.0),
                      child: const Image(
                              image:NetworkImage('https://firebasestorage.googleapis.com/v0/b/vookadweb.appspot.com/o/other%2Fsubscribe.png?alt=media&token=ee94a93a-1498-4b05-9671-63df4ca774e1&_gl=1*7qpo3h*_ga*MzMzNzM4MTMxLjE2OTc4MDE0OTg.*_ga_CW55HF8NVT*MTY5ODY1MTExNi42LjEuMTY5ODY1MTg3NC4zNi4wLjA.'),
-                             fit: BoxFit.cover,
-                            height: 205,
+                             fit: BoxFit.fitWidth,
                            ),
                    ),
                    const SizedBox(height: 15),
-                  Foods(dataList: (snapshot.data["inventoryItems"] as List)
+                  OFoods(dataList: (snapshot.data["inventoryItems"] as List)
                   .map((item) => item as Map<String, dynamic>)
                   .toList(),),
                   const SizedBox(height: 30),

@@ -14,11 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "480474082762-hh62d2tqp2367hk21rcm6dss26637d0d.apps.googleusercontent.com",
+          "client_id": "480474082762-mgeb473o8enrdr2n32padejrtegvc2rg.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.vookad_client",
-            "certificate_hash": "d34a9cf94d298fb642efed8d29932d40cf2207ff"
+            "certificate_hash": "53125859d21ead334971307c4568ac6905568c06"
           }
         },
         {

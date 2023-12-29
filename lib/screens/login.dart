@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:toast/toast.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // graphql
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -22,6 +23,7 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   String savedPhoneNumber = '';
   final TextEditingController phoneNumberController = TextEditingController();
+  FirebaseAuth auth = FirebaseAuth.instance;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +55,39 @@ class _LoginState extends State<Login> {
           savedPhoneNumber = '';
         });
       }
+    }
+  }Future<void> _fireloadData() async {
+    // Create a query object.
+    String phoneNumber = phoneNumberController.text;
+    if(phoneNumber.length == 10) {
+      setState(() {
+        savedPhoneNumber = phoneNumber;
+      });
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: '+91$phoneNumber',
+        verificationCompleted: (PhoneAuthCredential credential) async {
+          await auth.signInWithCredential(credential);
+          print("");
+          print("");
+          print("");
+          print("authenticated");
+          context.go('/home');
+        },
+        verificationFailed: (FirebaseAuthException e) {
+          showtoast("Please try again!");
+          setState(() {
+            savedPhoneNumber = '';
+          });
+        },
+        codeSent: (String verificationId, int? resendToken) {
+          setState(() {
+            savedPhoneNumber = '';
+          });
+          context.push('/verify/$verificationId/+91$phoneNumber/$resendToken');
+        },
+        codeAutoRetrievalTimeout: (String verificationId) { },
+      );
+
     }
   }
     return AuthScreen(
@@ -97,7 +132,7 @@ class _LoginState extends State<Login> {
       ),
       const SizedBox(height: 24),
       TextButton(
-        onPressed: savedPhoneNumber == '' ? loadData : null,
+        onPressed: savedPhoneNumber == '' ? _fireloadData : null,
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
           backgroundColor: AppColors.yellow,

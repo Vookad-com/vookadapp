@@ -7,6 +7,7 @@ import 'package:Vookad/models/address.dart';
 import 'package:Vookad/models/searchAddr.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -23,7 +24,15 @@ class Address extends StatefulWidget {
 class _AddressState extends State<Address> {
   final TextEditingController _textController = TextEditingController();
   late Timer _debounce = Timer(const Duration(seconds: 1), () { });
+  late Future<List<double>> location;
   List<SearchAddr> srhresults = [];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    location = getLoco();
+  }
 
   @override
   void dispose() {
@@ -32,7 +41,7 @@ class _AddressState extends State<Address> {
   }
 
   void _mapSearch(String searchText) async {
-    List<double> loco = await getLoco();
+    List<double> loco = await location;
     const String bearerToken = '91613684-c495-4383-a2e4-e028382ccbe2';
     final response = await http.get(Uri.parse('https://api.mapbox.com/geocoding/v5/mapbox.places/$searchText.json?proximity=${loco[1]},${loco[0]}&access_token=pk.eyJ1Ijoic2FoaWxjb2RlcjEiLCJhIjoiY2xhejYyOGdvMGlkajN3cnpnZXhvMGN3MSJ9.3kZ0cQL6qD9_JrFW557_0w'));
 
@@ -48,7 +57,8 @@ class _AddressState extends State<Address> {
               placeName: item["place_name"],
               place: item["text"],
               lng: item["center"][0],
-              lat: item["center"][1]
+              lat: item["center"][1],
+              pincode: "",
             );
             srhresults.add(inst);
           }
@@ -72,7 +82,7 @@ class _AddressState extends State<Address> {
 
   Future<List<AddressInst>> fetchAddress() async {
         try {
-          var query = QueryOptions(document: gql(getAddress));
+          var query = QueryOptions(document: gql(getAddress),fetchPolicy: FetchPolicy.noCache);
           final QueryResult result = await client.query(query);
           if (result.hasException) {
             throw Exception('Graphql error');
@@ -80,7 +90,7 @@ class _AddressState extends State<Address> {
             List<AddressInst> addresses = [];
             if (result.data?["getUser"]["addresses"] != null && result.data?["getUser"]["addresses"] is List) {
               for (var item in result.data?["getUser"]["addresses"]) {
-                AddressInst inst = AddressInst(label: item["label"][0], area: item["area"], building: item["building"], landmark: item["landmark"], location:item["location"]["coordinates"]);
+                AddressInst inst = AddressInst(id: item["_id"],label: item["label"][0], area: item["area"], building: item["building"], landmark: item["landmark"], location:item["location"]["coordinates"], pincode: item["pincode"]);
                 addresses.add(inst);
               }
             }
@@ -127,7 +137,7 @@ class _AddressState extends State<Address> {
                           const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
                       hintText: 'Search places, pincode, etc',
                       prefixIcon: const Icon(Icons.search_rounded, color: AppColors.bgPrimary,),
-                      suffixIcon: IconButton(
+                      suffixIcon: _textController.text == ""?const SizedBox():IconButton(
                                   icon: const Icon(Icons.clear),
                                   onPressed: () {
                                     setState(() {
@@ -160,7 +170,7 @@ class _AddressState extends State<Address> {
                 ),
               child: InkWell(
                 onTap: () async {
-                  List<double> loco = await getLoco();
+                  List<double> loco = await location;
                   context.push("/address/map/${loco[1]}/${loco[0]}");
                 },
                 child: const Padding(
@@ -188,8 +198,12 @@ class _AddressState extends State<Address> {
                 color: AppColors.white,
                 borderRadius: BorderRadius.circular(12.0),
                 ),
-              child: const InkWell(
-                child: Padding(
+              child: InkWell(
+                onTap: () async {
+                  List<double> loco = await location;
+                  context.push("/address/setaddr/${loco[1]}/${loco[0]}/ ");
+                },
+                child: const Padding(
                   padding: EdgeInsets.all(5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -232,7 +246,7 @@ class _AddressState extends State<Address> {
                                       const Icon(Icons.place, color: AppColors.bgPrimary),
                                       const SizedBox(width: 10),
                                       SizedBox(
-                                        width: 300, // Set your specific width here
+                                        width: 280, // Set your specific width here
                                         child: Text(
                                           e.placeName,
                                           style: const TextStyle(fontSize: 14),
@@ -268,7 +282,15 @@ class _AddressState extends State<Address> {
                             color: AppColors.white,
                             borderRadius: BorderRadius.circular(12.0),
                             ),
-                          child: InkWell(
+                          child: Column(
+                            children: [
+                              InkWell(
+                            onTap: () async {
+                              SearchAddr addr = SearchAddr(placeName: "${e.building}, ${e.area}, ${e.landmark}", place: e.label, pincode: e.pincode, lng: double.tryParse((e.location).elementAt(0)?.toString() ?? '0.0') ?? 0.0,lat: double.tryParse((e.location).elementAt(1)?.toString() ?? '0.0') ?? 0.0);
+                              var box = Hive.box<SearchAddr>('searchAddrBox');
+                              await box.put('current', addr);
+                              context.go("/home");
+                            },
                             child: Padding(
                               padding: const EdgeInsets.all(5),
                               child: Row(
@@ -283,13 +305,42 @@ class _AddressState extends State<Address> {
                                         ],
                                       ),
                                       const SizedBox(width: 10,),
-                                      Text("${e.building}, ${e.area}, ${e.landmark}", style: const TextStyle(fontSize: 14),)
+                                      SizedBox(
+                                        width: 280,
+                                        child: Text("${e.building}, ${e.area}, ${e.landmark}", style: const TextStyle(fontSize: 14),overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,),
+                                      )
                                     ],
                                   ),
                                   const Icon(Icons.arrow_right_rounded)
                                 ],
                               ),
                             ),
+                          ),
+                          Row(children: [
+                            const SizedBox(width: 50,),
+                            InkWell(
+                              onTap:(){
+                                context.push("/address/setaddr/${e.location[0]}/${e.location[1]}/${e.id}");
+                              },
+                              child: const Icon(Icons.edit, size: 30, color: AppColors.bgPrimary,),
+                            ),
+                            InkWell(
+                              onTap:() async {
+                                var query = MutationOptions(document: gql(delAddr), variables: {"delAddrId": e.id});
+                                try{
+                                  final QueryResult result = await client.mutate(query);
+                                  setState(() {
+
+                                  });
+                                } catch(e){
+                                  print(e);
+                                }
+                              },
+                              child: const Icon(Icons.delete_rounded, size: 30, color: AppColors.bgPrimary,),
+                            )
+                          ],),
+                            ],
                           ),
                         );
                       } ).toList(),
@@ -298,7 +349,12 @@ class _AddressState extends State<Address> {
                   if(snapshot.hasError){
                     return const SizedBox();
                   }
-                  return const CircularProgressIndicator(strokeWidth: 2,color: AppColors.bgPrimary,);
+                  return Container(
+                    width: 20,
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    height:20,
+                    child:const CircularProgressIndicator(strokeWidth: 1,color: AppColors.bgPrimary),
+                  );
                 }
             )
 

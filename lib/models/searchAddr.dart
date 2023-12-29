@@ -14,9 +14,13 @@ class SearchAddr {
   @HiveField(3)
   final double lat;
 
+  @HiveField(4)
+  final String pincode;
+
   SearchAddr({
     required this.placeName,
     required this.place,
+    required this.pincode,
     required this.lng,
     required this.lat,
   });
@@ -31,12 +35,14 @@ class SearchAddrAdapter extends TypeAdapter<SearchAddr> {
   SearchAddr read(BinaryReader reader) {
     final placeName = reader.readString();
     final place = reader.readString();
+    final pincode = reader.readString();
     final lng = reader.readDouble();
     final lat = reader.readDouble();
 
     return SearchAddr(
       placeName: placeName,
       place: place,
+      pincode: pincode,
       lng: lng,
       lat: lat,
     );
@@ -46,6 +52,7 @@ class SearchAddrAdapter extends TypeAdapter<SearchAddr> {
   void write(BinaryWriter writer, SearchAddr obj) {
     writer.writeString(obj.placeName);
     writer.writeString(obj.place);
+    writer.writeString(obj.pincode);
     writer.writeDouble(obj.lng);
     writer.writeDouble(obj.lat);
   }

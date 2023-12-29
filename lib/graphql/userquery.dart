@@ -9,6 +9,12 @@ mutation CheckPhonenSend(\$phone: String!) {
 }
 """;
 
+const fireUser = """mutation CreateUser {
+  createORCheck {
+    phone  
+  }
+}""";
+
 const otpCheck = """
 query Verify(\$verify: VerifyInput) {
   verifyOtp(verify: \$verify){
@@ -47,6 +53,7 @@ query InventoryItems(\$family: String!) {
   inventoryItems(family: \$family) {
     name
     _id
+    tags
     description
     gallery {
       url
@@ -63,6 +70,8 @@ const getAddress = """
 query getAddress {
   getUser {
   addresses {
+    _id
+    pincode
     area
     building
     landmark
@@ -72,5 +81,65 @@ query getAddress {
     }
   }  
   }
+}
+""";
+
+const delAddr = """
+mutation Mutation(\$delAddrId: ID!) {
+  delAddr(id: \$delAddrId) {
+    _id
+  }
+}
+""";
+
+const saveAddr = """
+mutation Mutation(\$addPayload: AddPayload!, \$saveAddressId: ID) {
+  saveAddress(addPayload: \$addPayload, id: \$saveAddressId) {
+    _id
+  }
+}
+""";
+
+const homequery = """
+query home(\$location: [Float], \$bannerId: ID!) {
+  nearby(location: \$location) {
+    ChefId:_id
+    displayname
+    distance
+    info {
+      name
+      tags
+      gallery {
+        url
+      }
+      category {
+        _id
+        name
+        price
+      }
+      description
+      _id
+    }
+  }
+  banner(id: \$bannerId) {
+    gallery {
+      url
+      route
+    }
+  }
+}
+""";
+
+const codcheckout = """
+mutation Checkout(\$items: [CheckoutItem]!, \$address: CheckoutAddress!, \$total: Float!, \$dod: String!) {
+  codcheckout(items: \$items,address: \$address,total: \$total, dod: \$dod) {
+  _id  
+  }
+}
+""";
+
+const setFCM = """
+mutation setFCM(\$fcmToken: String!) {
+  setFCM(fcmToken: \$fcmToken) 
 }
 """;
