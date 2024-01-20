@@ -3,6 +3,8 @@ import 'package:Vookad/screens/address/newadd.dart';
 import 'package:Vookad/screens/checkout/cart.dart';
 import 'package:Vookad/screens/checkout/placed.dart';
 import 'package:Vookad/screens/profile/edit.dart';
+import 'package:Vookad/screens/profile/order.dart';
+import 'package:Vookad/screens/projects.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 
@@ -31,7 +33,7 @@ final GlobalKey<NavigatorState> _sectionHomeNavigatorKey =
 final GlobalKey<NavigatorState> _sectionANavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'sectionANav');
 
-FirebaseAuth auth = FirebaseAuth.instance;
+FirebaseAuth? auth = FirebaseAuth.instance;
 
 final GoRouter router = GoRouter(
       navigatorKey: _rootNavigatorKey,
@@ -58,7 +60,7 @@ final GoRouter router = GoRouter(
                       },
                   redirect: (context, state) async {
                   // var auth = Hive.box('auth').get('jwt');
-                  if (auth.currentUser != null) {
+                  if (auth?.currentUser != null) {
                       return '/home';
                     } else {
                       return '/login';
@@ -86,7 +88,7 @@ final GoRouter router = GoRouter(
                     // bottom navigation bar.
                     path: '/products',
                     builder: (BuildContext context, GoRouterState state) =>
-                        const Cart(),
+                        const Products(),
                   ),
                 ],
               ),
@@ -114,6 +116,13 @@ final GoRouter router = GoRouter(
           path: '/profile/edit',
           builder: (BuildContext context, GoRouterState state) {
             return const Edit();
+          },
+          parentNavigatorKey: _rootNavigatorKey
+        ),
+        GoRoute(
+          path: '/profile/orders',
+          builder: (BuildContext context, GoRouterState state) {
+            return const OrdersUI();
           },
           parentNavigatorKey: _rootNavigatorKey
         ),

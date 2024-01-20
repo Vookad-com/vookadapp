@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:Vookad/components/dateselector.dart';
+import 'package:Vookad/components/nointernet.dart';
 import 'package:Vookad/config/colors.dart';
 import 'package:Vookad/config/location.dart';
 import 'package:Vookad/graphql/graphql.dart';
@@ -119,25 +120,27 @@ class _HomeState extends State<Home> {
             var data = snapshot.data["nearby"] as List;
             if(data.isEmpty){
               return SafeArea(
-                  child:Container(
-                    color: AppColors.white,
-                    child: Stack(
-                children: [
-                  Center(
-                child: SvgPicture.asset(
-                        "assets/noservice.svg",
-                      ),
-              ),
-                  Header(fetchedloco: fetchedloco,),
-                ],
-              ),
-                  )
+                  child: SingleChildScrollView(
+                    child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                    Header(fetchedloco: fetchedloco,),
+                    Center(
+                      child: SvgPicture.asset(
+                              "assets/noservice.svg",
+                              height: 800,
+                            ),
+                    ),
+                  ],
+                    ),
+                  ),
               );
             }
 
             return SafeArea(
         child: SingleChildScrollView(
           child: Column(
+
             children: <Widget>[
               Header(fetchedloco: fetchedloco,),
               CarouselSlider(
@@ -192,28 +195,7 @@ class _HomeState extends State<Home> {
         )
       );
           } else if(snapshot.hasError){
-            return SafeArea(child: SingleChildScrollView(
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.height,
-                child: Center(
-                  child: Stack(
-                    children: [
-                      SvgPicture.asset(
-                        "assets/network.svg",
-                      ),
-                      const Positioned(
-                        // left: 50,
-                        child: SizedBox(
-                          height: 400,
-                          child: Center(
-                            child: Text("No Internet", style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),),
-                          ),
-                        ),
-                      )
-                    ],
-                  ),
-            ),),
-              ));
+            return const NoInternet();
           }
           else {
             return const Center(

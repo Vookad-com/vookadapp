@@ -143,3 +143,20 @@ mutation setFCM(\$fcmToken: String!) {
   setFCM(fcmToken: \$fcmToken) 
 }
 """;
+
+const getOrders = """
+query GetOrders(\$page: Float){
+  fetchOrders(page: \$page) {
+    _id
+    items {
+      catid
+      chefid
+      pdtid
+      quantity
+    }
+    status
+    createdAt
+    total
+  }
+}
+""";

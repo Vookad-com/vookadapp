@@ -23,10 +23,10 @@ class _FoodsState extends State<Foods>  {
   List<Filter> types = [];
   Future<void> updateProductInHive(BuildContext context,String pdtId, String categoryId, double price, String chefId) async {
     final box = await Hive.openBox('products'); // Open a Hive box named 'products'.
-    final items = await Hive.openBox('cart');
+    final items = Hive.box('cart');
     final inst = items.get('total');
+    items.put('chefid', chefId);
     int current = price.toInt();
-    print(current);
     if(inst!=null){
       int total = inst;
       total+=current;
@@ -58,12 +58,12 @@ class _FoodsState extends State<Foods>  {
   void initState() {
     super.initState();
     types.addAll([Filter("All", true), Filter("Breakfast", false), Filter("Lunch", false), Filter("Snacks", false), Filter("Dinner", false)]);
-    dataList = filtertags(widget.dataList, currentfilter);
   }
 
 
   @override
   Widget build(BuildContext context) {
+    dataList = filtertags(widget.dataList, currentfilter);
 
     return Column(
       children: [
@@ -85,7 +85,7 @@ class _FoodsState extends State<Foods>  {
                       }
                       setState(() {
                         types = [...types];
-                        dataList = filtertags(widget.dataList, currentfilter);
+                        // dataList = filtertags(widget.dataList, currentfilter);
                       });
                     },
                     child: Container(
@@ -257,7 +257,7 @@ class _FoodsState extends State<Foods>  {
                                             Expanded(
                                                 flex: 1,
                                                 child: InkWell(
-                                                onTap: () => updateProductInHive(context, pdtId,e is Map<String, dynamic> ? e['_id'] : '', e is Map<String, dynamic> ? e['price'] is int? e['price'].toDouble():e['price']  : 0,ChefId),
+                                                onTap: () => _chefValidatorBox(context, pdtId,e is Map<String, dynamic> ? e['_id'] : '', e is Map<String, dynamic> ? e['price'] is int? e['price'].toDouble():e['price']  : 0,ChefId),
                                                 child: Container(
                                                decoration: BoxDecoration(
                                                   color: const Color(0xFFFF8023), // Set your desired background color here
@@ -353,7 +353,7 @@ class _FoodsState extends State<Foods>  {
                                             Expanded(
                                                 flex: 1,
                                                 child: InkWell(
-                                                onTap: () => updateProductInHive(context, pdtId,e is Map<String, dynamic> ? e['_id'] : '', e is Map<String, dynamic> ? e['price'] is int? e['price'].toDouble():e['price']  : 0,ChefId),
+                                                onTap: () => _chefValidatorBox(context, pdtId,e is Map<String, dynamic> ? e['_id'] : '', e is Map<String, dynamic> ? e['price'] is int? e['price'].toDouble():e['price']  : 0,ChefId),
                                                 child: Container(
                                                decoration: BoxDecoration(
                                                   color: const Color(0xFFFF8023), // Set your desired background color here
@@ -385,6 +385,42 @@ class _FoodsState extends State<Foods>  {
                                 )
                               )
                             ));
+  }
+  void _chefValidatorBox(BuildContext context,String pdtId, String categoryId, double price, String chefId){
+    final items = Hive.box('cart');
+    String? currentchefid = items.get('chefid');
+    if(chefId != currentchefid && currentchefid !=null){
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Clear Cart or Cancel?'),
+          content: const Text('You can only order from one chef at a time!'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await Hive.box('products').clear();
+                await Hive.box('cart').clear();
+                // ignore: use_build_context_synchronously
+                updateProductInHive(context, pdtId, categoryId, price, chefId);
+              },
+              child: const Text('Clear', style: TextStyle(color: AppColors.bgPrimary),),
+            ),
+            TextButton(
+              onPressed: () {
+                // Handle 'Cancel' button press
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel', style: TextStyle(color: AppColors.bgPrimary),),
+            ),
+          ],
+        );
+      },
+    );
+    } else{
+      updateProductInHive(context, pdtId, categoryId, price, chefId);
+    }
   }
 }
 

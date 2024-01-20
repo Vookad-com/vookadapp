@@ -24,6 +24,7 @@ class _OFoodsState extends State<OFoods> {
   final box = await Hive.openBox('products'); // Open a Hive box named 'products'.
   final items = await Hive.openBox('cart');
   final inst = items.get('total');
+  items.put('chefid', chefId);
   int current = price.toInt();
   print(current);
   if(inst!=null){
@@ -243,7 +244,7 @@ class _OFoodsState extends State<OFoods> {
                                                width: 75,
                                                height: 20,
                                                child: InkWell(
-                                                onTap: () => updateProductInHive(context, pdtId,e is Map<String, dynamic> ? e['_id'] : '', e is Map<String, dynamic> ? e['price'] is int? e['price'].toDouble():e['price']  : 0,ChefId),
+                                                onTap: () => _chefValidatorBox(context, pdtId,e is Map<String, dynamic> ? e['_id'] : '', e is Map<String, dynamic> ? e['price'] is int? e['price'].toDouble():e['price']  : 0,ChefId),
                                                   child: const Center(
                                                     child: Text(
                                                       "Add",
@@ -328,7 +329,7 @@ class _OFoodsState extends State<OFoods> {
                                             Expanded(
                                                 flex: 1,
                                                 child: InkWell(
-                                                onTap: () => updateProductInHive(context, pdtId,e is Map<String, dynamic> ? e['_id'] : '', e is Map<String, dynamic> ? e['price'] is int? e['price'].toDouble():e['price']  : 0,ChefId),
+                                                onTap: () => _chefValidatorBox(context, pdtId,e is Map<String, dynamic> ? e['_id'] : '', e is Map<String, dynamic> ? e['price'] is int? e['price'].toDouble():e['price']  : 0,ChefId),
                                                 child: Container(
                                                decoration: BoxDecoration(
                                                   color: const Color(0xFFFF8023), // Set your desired background color here
@@ -360,6 +361,42 @@ class _OFoodsState extends State<OFoods> {
                                 )
                               )
                             ));
+  }
+  void _chefValidatorBox(BuildContext context,String pdtId, String categoryId, double price, String chefId){
+    final items = Hive.box('cart');
+    String? currentchefid = items.get('chefid');
+    if(chefId != currentchefid && currentchefid !=null){
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Clear Cart or Cancel?'),
+          content: const Text('You can only order from one chef at a time!'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                await Hive.box('products').clear();
+                await Hive.box('cart').clear();
+                // ignore: use_build_context_synchronously
+                updateProductInHive(context, pdtId, categoryId, price, chefId);
+              },
+              child: const Text('Clear', style: TextStyle(color: AppColors.bgPrimary),),
+            ),
+            TextButton(
+              onPressed: () {
+                // Handle 'Cancel' button press
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel', style: TextStyle(color: AppColors.bgPrimary),),
+            ),
+          ],
+        );
+      },
+    );
+    } else{
+      updateProductInHive(context, pdtId, categoryId, price, chefId);
+    }
   }
 }
 

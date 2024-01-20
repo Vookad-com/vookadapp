@@ -168,12 +168,12 @@ class _CartState extends State<Cart> {
       loading = true;
     });
     var items = Hive.box('products').values.cast<Product>().map((Product e) => {"chefid":e.chefId, "pdtid":e.pdtId,"catid":e.categoryId, "quantity":e.quantity}).toList();
-    DateTime dod = Hive.box('deliveryDate').get("current");
+    DateTime? dod = Hive.box('deliveryDate').get("current");
     var payload = {
       "items":items,
       "address":selectedType.toJson(),
       "total":regTotal+subTotal+pdtTotal,
-      "dod": dod.toIso8601String()
+      "dod": dod?.toIso8601String() ?? DateTime.now().toIso8601String()
     };
     try {
         var query = MutationOptions(document: gql(codcheckout), variables: payload);

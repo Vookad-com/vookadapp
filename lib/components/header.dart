@@ -149,7 +149,14 @@ class _HeaderState extends State<Header> {
                       child: SizedBox(
                         height: 50,
                         child: ClipOval(
-                          child: photoUrl!=null?Image.network(photoUrl??"", fit: BoxFit.cover,):Image.asset('assets/dummy/profile.png'),
+                          child: photoUrl!=null?Container(
+                            width: 50,
+                            height: 50,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                            ),
+                            child: Image.network(photoUrl??"", fit: BoxFit.cover,),
+                          ):Image.asset('assets/dummy/profile.png'),
                         ),
                       )
                     ),

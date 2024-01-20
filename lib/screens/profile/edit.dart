@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:go_router/go_router.dart';
 
 class Edit extends StatefulWidget {
   const Edit({super.key});
@@ -24,6 +25,7 @@ class _EditState extends State<Edit> {
   String? photoUrl;
   late StreamSubscription<User?> listener;
   bool loading = false;
+  bool loading1 = false;
   @override
   void initState(){
     super.initState();
@@ -70,11 +72,17 @@ class _EditState extends State<Edit> {
     }
   }
 
-  void _saveText() {
+  void _saveText(BuildContext context) async {
     // Implement your logic to save the text here
     // For now, just print a message
+    setState(() {
+      loading1 = true;
+    });
     String text = _textController.text;
-    auth.currentUser?.updateDisplayName(text);
+    await auth.currentUser?.updateDisplayName(text);
+    setState(() {
+      loading1 = false;
+    });
   }
 
   @override
@@ -102,8 +110,14 @@ class _EditState extends State<Edit> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: _saveText,
-              child: const Text('Save Text'),
+              onPressed: ()=>_saveText(context),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  const Text('Save Text'),
+                  loading1?const CircularProgressIndicator():const SizedBox(),
+                ],
+              ),
             ),
           ],
         ),

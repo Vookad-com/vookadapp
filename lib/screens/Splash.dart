@@ -27,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
     // TODO: implement initState
     super.initState();
 
-   Start(context);
+
   }
 
   void Start(BuildContext context) async {
@@ -38,13 +38,13 @@ class _SplashScreenState extends State<SplashScreen> {
     //   // ignore: use_build_context_synchronously
     //   context.go('/home');
     // });
-    await Future.wait([
+    Future.wait([
       Hive.openBox('deliveryDate'),
       Hive.openBox<SearchAddr>('searchAddrBox'),
       messaging(),
-    ]);
+    ])
+        .then((val)=>context.go('/home'));
     // ignore: use_build_context_synchronously
-    context.go('/home');
   }
 
     Future<bool> messaging() async {
@@ -64,8 +64,11 @@ class _SplashScreenState extends State<SplashScreen> {
      //   print('Permission granted: ${settings.authorizationStatus}');
      // }
 
-     String? token = await messaging.getToken();
      try {
+         String? token = await messaging.getToken();
+         if (kDebugMode) {
+          print('Registration Token=$token');
+        }
         var query = MutationOptions(document: gql(setFCM), variables: {"fcmToken" : token});
         final Future<QueryResult> result = client.mutate(query);
         result.then((result){
@@ -83,15 +86,20 @@ class _SplashScreenState extends State<SplashScreen> {
       } catch(e){
         print(e);
       }
-      if (kDebugMode) {
-        print('Registration Token=$token');
-      }
+
 
     return true;
   }
 
   @override
   Widget build(BuildContext context) {
+    try{
+     Start(context);
+   }catch(e){
+     if (kDebugMode) {
+       print("bug app init!");
+     }
+   }
     return const Scaffold(
       backgroundColor: Color(0xFFFF5021),
       body: Center(

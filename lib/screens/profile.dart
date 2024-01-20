@@ -147,7 +147,9 @@ class _ProfileState extends State<Profile> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      Padding(
+                      GestureDetector(
+                        onTap: () => context.push("/profile/orders"),
+                        child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
                           children: [
@@ -159,7 +161,7 @@ class _ProfileState extends State<Profile> {
                                       .bgPrimary
                               ), // set the background color of the circle
                               child: const Icon(
-                                Icons.mail_outline,
+                                Icons.list_alt_sharp,
                                 color: Colors.black,
                                 size: 14,
                                 weight: 2,
@@ -171,6 +173,7 @@ class _ProfileState extends State<Profile> {
                             )
                           ],
                         ),
+                      ),
                       ),
                     ],
                   ),

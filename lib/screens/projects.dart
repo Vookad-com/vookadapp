@@ -8,17 +8,17 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../components/otherCard.dart';
 
-class Schedule extends StatefulWidget {
-  const Schedule({super.key});
+class Products extends StatefulWidget {
+  const Products({super.key});
 
   @override
-  State<Schedule> createState() => _ScheduleState();
+  State<Products> createState() => _ProductsState();
 }
 
-class _ScheduleState extends State<Schedule> {
+class _ProductsState extends State<Products> {
 
 Future fetchData() async {
-  var query = QueryOptions(document: gql(monthly), variables: const {"family": "package"});
+  var query = QueryOptions(document: gql(monthly), variables: const {"family": "products"});
   final QueryResult result = await client.query(query);
 
   if (result.hasException) {
@@ -45,7 +45,7 @@ Future fetchData() async {
                   ClipRRect(
                      borderRadius: BorderRadius.circular(8.0),
                      child: const Image(
-                             image:NetworkImage('https://firebasestorage.googleapis.com/v0/b/vookadweb.appspot.com/o/other%2Fsubscribe.png?alt=media&token=ee94a93a-1498-4b05-9671-63df4ca774e1&_gl=1*7qpo3h*_ga*MzMzNzM4MTMxLjE2OTc4MDE0OTg.*_ga_CW55HF8NVT*MTY5ODY1MTExNi42LjEuMTY5ODY1MTg3NC4zNi4wLjA.'),
+                             image:NetworkImage('https://firebasestorage.googleapis.com/v0/b/vookadweb.appspot.com/o/other%2Fproducts.png?alt=media&token=f388eb30-c462-4dde-ba3d-20a0c76fda33'),
                              fit: BoxFit.fitWidth,
                            ),
                    ),

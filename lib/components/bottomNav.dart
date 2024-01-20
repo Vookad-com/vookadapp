@@ -38,7 +38,7 @@ class _BottomNavState extends State<BottomNav> {
 
   void getCartDetails() async {
     final box = await Hive.openBox('cart');
-    int stotal = box.get('total');
+    int stotal = box.get('total') ?? 0;
     final pdtBox = await Hive.openBox('products');
     setState(() {
       notEmpty = pdtBox.length>0? true: false;
@@ -159,7 +159,7 @@ class _BottomNavState extends State<BottomNav> {
                 )
             ), Expanded(
                 child: GestureDetector(
-                  onTap: ()=> context.push('/address/map/85.8/20.4'),
+                  onTap: ()=> _onTap(context, 2),
                   child: Column(
                   children: <Widget>[
                     Container(

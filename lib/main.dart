@@ -30,50 +30,64 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-    await FirebaseAppCheck.instance.activate(
-    webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
-    // androidProvider: AndroidProvider.debug,
-    androidProvider: AndroidProvider.playIntegrity,
-    appleProvider: AppleProvider.appAttest,
-  );
-    final appDir = await getApplicationDocumentsDirectory();
-    Hive.init(appDir.path);
-    if (!Hive.isAdapterRegistered(ProductAdapter().typeId)) {
-      Hive.registerAdapter(ProductAdapter());
-    }if (!Hive.isAdapterRegistered(SearchAddrAdapter().typeId)) {
-      Hive.registerAdapter(SearchAddrAdapter());
-    }
-
-
+  await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+  final appDir = await getApplicationDocumentsDirectory();
+  Hive.init(appDir.path);
+  if (!Hive.isAdapterRegistered(ProductAdapter().typeId)) {
+    Hive.registerAdapter(ProductAdapter());
+  }if (!Hive.isAdapterRegistered(SearchAddrAdapter().typeId)) {
+    Hive.registerAdapter(SearchAddrAdapter());
+  }
   runApp(const MyApp());
 }
 final _messageStreamController = BehaviorSubject<RemoteMessage>();
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
-  bool get initialState => false;
-
-
-
-  void hiveInit() async {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      if (kDebugMode) {
-        print('Message notification: ${message.notification?.title}');
-        print('Message notification: ${message.notification?.body}');
-      }
-
-      _messageStreamController.sink.add(message);
-    });
-  }
-
 
   @override
-  Widget build(BuildContext context) {
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  void hiveInit() async {
+
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    var fireAppcheck =  FirebaseAppCheck.instance.activate(
+      webProvider: ReCaptchaV3Provider('recaptcha-v3-site-key'),
+      // androidProvider: AndroidProvider.debug,
+      androidProvider: AndroidProvider.playIntegrity,
+      appleProvider: AppleProvider.appAttest,
+    );
+    fireAppcheck.then(
+            (val) async {
+                if (kDebugMode) {
+                  print("initialized");
+                }
+                FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+                  if (kDebugMode) {
+                    print('Message notification: ${message.notification?.title}');
+                    print('Message notification: ${message.notification?.body}');
+                  }
+
+                  _messageStreamController.sink.add(message);
+                });
+                setState(() {
+
+                });
+              });
+  }
+
+  @override
+  void initState(){
+    super.initState();
     hiveInit();
+  }
+  @override
+  Widget build(BuildContext context) {
+
    //  _messageStreamController.listen((message) {
    //   if (message.notification != null) {
    //       if (kDebugMode) {
@@ -94,8 +108,11 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.orange,
         primaryColor: AppColors.bgPrimary,
         fontFamily: GoogleFonts.poppins().fontFamily,
+        unselectedWidgetColor: AppColors.bgPrimary,
+        radioTheme: RadioThemeData(fillColor: MaterialStateColor.resolveWith((states) => AppColors.bgPrimary))
       ),
       routerConfig: router,
     );
   }
 }
+
