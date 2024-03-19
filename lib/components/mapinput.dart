@@ -3,13 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/visibility.dart' as flutterVisibility;
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
+import 'package:go_router/go_router.dart';
 import 'package:Vookad/config/colors.dart';
 import 'package:Vookad/config/location.dart';
-import 'package:flutter/services.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 class MapInput extends StatefulWidget {
   final double lng;
@@ -109,7 +107,6 @@ class _MapInputState extends State<MapInput> {
 
   _onCameraChangeListener(data) async {
     // print("CameraChangedEventData: begin: ${data.begin}, end: ${data.end}");
-    print("oggy");
     if (_debounce.isActive ?? false) _debounce.cancel();
     _debounce = Timer(const Duration(seconds: 1), () async {
       var cam = await mapboxMap?.getCameraState();
@@ -151,39 +148,61 @@ class _MapInputState extends State<MapInput> {
               margin: const EdgeInsets.symmetric(vertical: 10,horizontal: 5),
             child: Column(
               children: [
-                TextField(
-                    controller: _textController,
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: AppColors.white,
-                      contentPadding:
-                          const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
-                      hintText: 'Search places, pincode, etc',
-                      prefixIcon: const Icon(Icons.search_rounded, color: AppColors.bgPrimary,),
-                      suffixIcon: _textController.text == ""?const SizedBox():IconButton(
-                                  icon: const Icon(Icons.clear),
-                                  onPressed: () {
-                                    setState(() {
-                                      _textController.clear();
-                                       FocusScope.of(context).unfocus();
-                                       srhresults.clear();
-                                    });
-                                  },
-                                ),
-                      hintStyle: const TextStyle(color: Colors.grey),
-                      enabledBorder: OutlineInputBorder(
-                          borderSide:
-                              const BorderSide(color: AppColors.white, width: 1),
-                          borderRadius: BorderRadius.circular(12)),
-                      focusedBorder: OutlineInputBorder(
-                          borderSide:
-                              const BorderSide(color: AppColors.white, width: 1),
-                          borderRadius: BorderRadius.circular(12)),
-                    ),
-                    onChanged: _onTextChanged,
-                    // controller: phoneNumberController,
-                    style: const TextStyle(color: AppColors.black, fontSize: 16),
-                  ),
+                Row(
+                  children: [
+                    Expanded(flex:2,child: InkWell(
+                      onTap: () {
+                        context.pop();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(5.0),
+                        decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.bgSecondary
+                        ), // set the background color of the circle
+                        child: const Icon(
+                          Icons.keyboard_arrow_left_rounded,
+                          color: Colors.black,
+                          size: 30,
+                          weight: 3,
+                        ), // set the icon and its color
+                      ),
+                    )),
+                    Expanded(flex: 10,child: TextField(
+                      controller: _textController,
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: AppColors.white,
+                        contentPadding:
+                        const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+                        hintText: 'Search places, pincode, etc',
+                        prefixIcon: const Icon(Icons.search_rounded, color: AppColors.bgPrimary,),
+                        suffixIcon: _textController.text == ""?const SizedBox():IconButton(
+                          icon: const Icon(Icons.clear),
+                          onPressed: () {
+                            setState(() {
+                              _textController.clear();
+                              FocusScope.of(context).unfocus();
+                              srhresults.clear();
+                            });
+                          },
+                        ),
+                        hintStyle: const TextStyle(color: Colors.grey),
+                        enabledBorder: OutlineInputBorder(
+                            borderSide:
+                            const BorderSide(color: AppColors.white, width: 1),
+                            borderRadius: BorderRadius.circular(12)),
+                        focusedBorder: OutlineInputBorder(
+                            borderSide:
+                            const BorderSide(color: AppColors.white, width: 1),
+                            borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onChanged: _onTextChanged,
+                      // controller: phoneNumberController,
+                      style: const TextStyle(color: AppColors.black, fontSize: 16),
+                    ))
+                  ],
+                ),
                   flutterVisibility.Visibility(
                       visible: srhresults.isNotEmpty,
                       child: Column(

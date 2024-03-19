@@ -353,35 +353,34 @@ class _CartState extends State<Cart> {
                 future: addresses,
                 builder: (context, snapshot){
                   if(snapshot.hasData){
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: snapshot.data!.map((e){
-                        return Row(
-                                    children: [
-                                      Radio(
-                                        value: e,
-                                        groupValue: selectedType,
-                                        onChanged: (value) {
-                                          setState(() {
-                                            selectedType = e;
-                                          });
-                                        },
-                                      ),
-                                      Column(
-                                        children: [
-                                          const Icon(Icons.place, color: AppColors.bgPrimary,),
-                                          Text(e.label),
-                                        ],
-                                      ),
-                                      const SizedBox(width: 10,),
-                                      SizedBox(
-                                        width: 280,
-                                        child: Text("${e.building}, ${e.area}, ${e.landmark}", style: const TextStyle(fontSize: 14),overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,),
-                                      )
-                                    ],
-                                  );
-                      } ).toList(),
+                    return Padding(padding: EdgeInsets.symmetric(horizontal: 5),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: snapshot.data!.map((e){
+                          return Row(
+                            children: [
+                              Radio(
+                                value: e,
+                                groupValue: selectedType,
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedType = e;
+                                  });
+                                },
+                              ),
+                              Column(
+                                children: [
+                                  const Icon(Icons.place, color: AppColors.bgPrimary,),
+                                  Text(e.label),
+                                ],
+                              ),
+                              const SizedBox(width: 10,),
+                              Expanded(child: Text("${e.building}, ${e.area}, ${e.landmark}", style: const TextStyle(fontSize: 14),overflow: TextOverflow.ellipsis,
+                                maxLines: 1,))
+                            ],
+                          );
+                        } ).toList(),
+                      ),
                     );
                   }
                   if(snapshot.hasError){

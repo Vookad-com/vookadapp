@@ -10,7 +10,6 @@ import 'package:flutter/material.dart';
 
 import 'components/bottomNav.dart';
 
-import 'package:hive/hive.dart';
 
 //transitions
 import 'components/transition.dart';

@@ -2,7 +2,6 @@ import 'package:Vookad/components/nointernet.dart';
 import 'package:Vookad/graphql/graphql.dart';
 import 'package:Vookad/graphql/userquery.dart';
 import 'package:flutter/material.dart';
-import '../components/foodCards.dart';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 

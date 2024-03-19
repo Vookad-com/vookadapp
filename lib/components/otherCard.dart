@@ -165,35 +165,38 @@ class _OFoodsState extends State<OFoods> {
                                                       fontWeight: FontWeight.bold,
                                                       color: Color(0xFF666666),
                                                       fontSize: 9,
-                                                    ),),
-                                         Row(
-                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                    ),maxLines: 2, overflow: TextOverflow.ellipsis,),
+                                         Wrap(
+
+                                           alignment: WrapAlignment.spaceEvenly,
                                            children: <Widget>[
-                                             Text("₹ ${info["category"][0]['price']}",style: const TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Color(0xFFFF8023),
-                                                      fontSize: 16,
-                                                    ),),
-                                             Text(info["category"][0]['name']),
-                                             Container(
-                                               decoration: BoxDecoration(
-                                                  color: const Color(0xFFFF8023), // Set your desired background color here
-                                                  borderRadius: BorderRadius.circular(100.0), // Optional: Add rounded corners
-                                                ),
-                                               width: 75,
-                                               height: 20,
-                                               child: InkWell(
-                                                onTap: () => _displayBottomSheet(context, info["category"], info["_id"], "6543ad8f0844d7ab55ef821f"),
-                                                  child: const Center(
-                                                    child: Text(
-                                                      "Add to cart",
-                                                      style: TextStyle(
-                                                        color: Colors.white,
-                                                        fontSize: 10,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                    ),
-                                                  ),
+                                             Expanded(
+                                                 child:Text("₹ ${info["category"][0]['price']}",style: const TextStyle(
+                                                   fontWeight: FontWeight.bold,
+                                                   color: Color(0xFFFF8023),
+                                                   fontSize: 16,
+                                                 ),)
+                                             ),
+                                             Expanded(child: Text(info["category"][0]['name'], overflow: TextOverflow.ellipsis,),),
+                                             InkWell(
+                                               onTap: () =>  _displayBottomSheet(context, info["category"], info["_id"], "6543ad8f0844d7ab55ef821f"),
+                                               child: Container(
+                                                 decoration: BoxDecoration(
+                                                   color: const Color(0xFFFF8023), // Set your desired background color here
+                                                   borderRadius: BorderRadius.circular(100.0), // Optional: Add rounded corners
+                                                 ),
+                                                 // width: 90,
+                                                 height: 30,
+                                                 child: const Center(
+                                                   child: Text(
+                                                     "Add to cart",
+                                                     style: TextStyle(
+                                                       color: Colors.white,
+                                                       fontSize: 12,
+                                                       fontWeight: FontWeight.bold,
+                                                     ),
+                                                   ),
+                                                 ),
                                                ),
                                              )
                                            ],

@@ -6,7 +6,7 @@ import 'package:Vookad/models/orders.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-
+import 'package:go_router/go_router.dart';
 class OrdersUI extends StatefulWidget {
   const OrdersUI({super.key});
 
@@ -76,15 +76,36 @@ class _OrdersState extends State<OrdersUI> {
         children: [
           Container(
             padding: const EdgeInsets.all(10),
-            child: const Text("Order History"
-            ,style: TextStyle(fontSize: 22,fontWeight: FontWeight.w700,color: AppColors.bgPrimary),),
+            child: Row(
+              children: [
+                InkWell(
+                  onTap: () {
+                    context.pop();
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(5.0),
+                    decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                    ), // set the background color of the circle
+                    child: const Icon(
+                      Icons.keyboard_arrow_left_rounded,
+                      color: AppColors.bgPrimary,
+                      size: 35,
+                      weight: 2,
+                    ), // set the icon and its color
+                  ),
+                ),
+                const Text("Order History"
+                  ,style: TextStyle(fontSize: 22,fontWeight: FontWeight.w700,color: AppColors.bgPrimary),)
+              ],
+            ),
           ),
           FutureBuilder(future: response, builder: (context, snapshot) {
             if(snapshot.hasData){
               if(page == 1){
                 orders.addAll(snapshot.data?.orders ?? []);
               }
-              if(orders.length == 0){
+              if(orders.isEmpty){
                 return const Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 10),

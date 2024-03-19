@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:Vookad/components/dateselector.dart';
 import 'package:Vookad/components/nointernet.dart';
-import 'package:Vookad/config/colors.dart';
 import 'package:Vookad/config/location.dart';
 import 'package:Vookad/graphql/graphql.dart';
 import 'package:Vookad/graphql/userquery.dart';

@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
-import 'package:toast/toast.dart';
 import '../toaster.dart';
 import '../models/dayinfo.dart';
 import 'package:hexcolor/hexcolor.dart';

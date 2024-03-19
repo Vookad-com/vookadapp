@@ -294,23 +294,21 @@ class _AddressState extends State<Address> {
                             child: Padding(
                               padding: const EdgeInsets.all(5),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Column(
-                                        children: [
-                                          const Icon(Icons.place, color: AppColors.bgPrimary,),
-                                          Text(e.label),
-                                        ],
-                                      ),
-                                      const SizedBox(width: 10,),
-                                      SizedBox(
-                                        width: 280,
-                                        child: Text("${e.building}, ${e.area}, ${e.landmark}", style: const TextStyle(fontSize: 14),overflow: TextOverflow.ellipsis,
-                                          maxLines: 1,),
-                                      )
-                                    ],
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        const Icon(Icons.place, color: AppColors.bgPrimary,),
+                                        Text(e.label),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10,),
+                                  Expanded(
+                                    flex:3,
+                                    child: Text("${e.building}, ${e.area}, ${e.landmark}", style: const TextStyle(fontSize: 14),overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,),
                                   ),
                                   const Icon(Icons.arrow_right_rounded)
                                 ],

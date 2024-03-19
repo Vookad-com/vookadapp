@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:go_router/go_router.dart';
 
 class Edit extends StatefulWidget {
   const Edit({super.key});
@@ -19,7 +18,7 @@ class Edit extends StatefulWidget {
 class _EditState extends State<Edit> {
 
   final ImagePicker picker = ImagePicker();
-  TextEditingController _textController = TextEditingController();
+  final TextEditingController _textController = TextEditingController();
   FirebaseAuth auth = FirebaseAuth.instance;
   final storage = FirebaseStorage.instance;
   String? photoUrl;

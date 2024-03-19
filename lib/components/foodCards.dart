@@ -131,6 +131,7 @@ class _FoodsState extends State<Foods>  {
                               borderRadius: BorderRadius.circular(8.0), // Set the border radius
                             ),
                            child: Row(
+
                              children: <Widget>[
                                Expanded(
                                  flex:2,
@@ -165,12 +166,15 @@ class _FoodsState extends State<Foods>  {
                                Expanded(
                                    flex: 3,
                                    child: Column(
-                                     crossAxisAlignment: CrossAxisAlignment.end,
+                                     crossAxisAlignment: CrossAxisAlignment.start,
                                      children: [
-                                       Padding(padding: const EdgeInsets.symmetric(horizontal: 10),
-                                       child: Text("By ${e["displayname"]}", style: const TextStyle(color: AppColors.bgPrimary, fontWeight: FontWeight.bold,
-                                                      fontSize: 14,),)
-                                         ,),
+                                       Align(
+                                         alignment: Alignment.centerRight,
+                                         child: Padding(padding: const EdgeInsets.symmetric(horizontal: 10),
+                                           child: Text("By ${e["displayname"]}", style: const TextStyle(color: AppColors.bgPrimary, fontWeight: FontWeight.bold,
+                                             fontSize: 14,),)
+                                           ,),
+                                       ),
                                        Padding(
                                      padding: const EdgeInsets.all(10.0),
                                      child: Column(
@@ -186,15 +190,18 @@ class _FoodsState extends State<Foods>  {
                                                       color: Color(0xFF666666),
                                                       fontSize: 10,
                                                     ),),
-                                         Row(
-                                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                         Wrap(
+
+                                           alignment: WrapAlignment.spaceEvenly,
                                            children: <Widget>[
-                                             Text("₹ ${info["category"][0]['price']}",style: const TextStyle(
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Color(0xFFFF8023),
-                                                      fontSize: 16,
-                                                    ),),
-                                             Text(info["category"][0]['name']),
+                                             Expanded(
+                                               child:Text("₹ ${info["category"][0]['price']}",style: const TextStyle(
+                                                 fontWeight: FontWeight.bold,
+                                                 color: Color(0xFFFF8023),
+                                                 fontSize: 16,
+                                               ),)
+                                             ),
+                                             Expanded(child: Text(info["category"][0]['name'], overflow: TextOverflow.ellipsis,),),
                                              InkWell(
                                                 onTap: () => _displayBottomSheet(context, info["category"], info["_id"], e["ChefId"]),
                                              child: Container(
@@ -202,8 +209,8 @@ class _FoodsState extends State<Foods>  {
                                                   color: const Color(0xFFFF8023), // Set your desired background color here
                                                   borderRadius: BorderRadius.circular(100.0), // Optional: Add rounded corners
                                                 ),
-                                               width: 90,
-                                               height: 22,
+                                               // width: 90,
+                                               height: 30,
                                                child: const Center(
                                                     child: Text(
                                                       "Add to cart",

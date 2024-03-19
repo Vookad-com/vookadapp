@@ -1,11 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/link.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 import '../config/colors.dart';
-import 'package:hive/hive.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class Profile extends StatefulWidget {
@@ -147,7 +145,7 @@ class _ProfileState extends State<Profile> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      GestureDetector(
+                      InkWell(
                         onTap: () => context.push("/profile/orders"),
                         child: Padding(
                         padding: const EdgeInsets.all(8.0),

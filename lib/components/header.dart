@@ -1,14 +1,10 @@
 import 'dart:async';
 
-import 'package:Vookad/config/location.dart';
 import 'package:Vookad/models/searchAddr.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:hexcolor/hexcolor.dart';
-import 'package:hive/hive.dart';
-import 'dart:convert';
 
 class Header extends StatefulWidget {
   final Future<SearchAddr> fetchedloco;

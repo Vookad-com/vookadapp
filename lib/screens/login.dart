@@ -56,7 +56,7 @@ class _LoginState extends State<Login> {
         });
       }
     }
-  }Future<void> _fireloadData() async {
+  }Future<void> fireloadData() async {
     // Create a query object.
     String phoneNumber = phoneNumberController.text;
     if(phoneNumber.length == 10) {
@@ -132,7 +132,7 @@ class _LoginState extends State<Login> {
       ),
       const SizedBox(height: 24),
       TextButton(
-        onPressed: savedPhoneNumber == '' ? _fireloadData : null,
+        onPressed: savedPhoneNumber == '' ? fireloadData : null,
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14),
           backgroundColor: AppColors.yellow,
